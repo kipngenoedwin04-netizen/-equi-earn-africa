@@ -1,0 +1,294 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#071b17">
+  <title>EQUI_EARN-AFRICA | Work • Earn • Grow</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;background:#071b17;color:#f5f7f5;font-family:Arial,sans-serif}
+    header{padding:20px 6%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #244039}
+    .brand{font-size:21px;font-weight:800;color:#35d39a}
+    .brand span{color:white}
+    button{border:0;border-radius:9px;padding:12px 18px;background:#35d39a;color:#06251b;font-weight:bold;cursor:pointer}
+    button.secondary{background:#203d34;color:white}
+    button:disabled{opacity:.5}
+    main{max-width:1050px;margin:auto;padding:35px 20px}
+    .hero{padding:35px 10px;text-align:center}
+    .hero h1{font-size:clamp(32px,7vw,55px);margin:10px 0}
+    .hero h1 span{color:#35d39a}
+    .muted{color:#a8bbb3;line-height:1.6}
+    .panel{background:#102a23;border:1px solid #24483d;border-radius:15px;padding:22px;margin:18px 0}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
+    input{width:100%;padding:14px;margin:8px 0 15px;background:#071b17;border:1px solid #36564b;border-radius:8px;color:white}
+    label{font-size:14px;color:#c4d5cd}
+    .hidden{display:none!important}
+    .status{display:inline-block;background:#24483d;color:#75e8b9;padding:7px 12px;border-radius:20px;font-size:12px}
+    .task{border:1px solid #36564b;padding:16px;border-radius:12px;margin:12px 0}
+    .task h3{margin-top:0}
+    footer{text-align:center;padding:30px;color:#8ca49a;font-size:13px}
+    #message{padding:12px;border-radius:8px;margin:12px 0;display:none}
+    .error{background:#572b2b;color:#ffdada}
+    .success{background:#174b38;color:#baffd9}
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">EQUI_<span>EARN</span>-AFRICA</div>
+  <button class="secondary" id="logoutBtn" onclick="logout()" hidden>Log out</button>
+</header>
+
+<main>
+  <section class="hero">
+    <p class="status">WORK • EARN • GROW</p>
+    <h1>Build Skills. <span>Earn.</span> Grow.</h1>
+    <p class="muted">A platform connecting people to legitimate digital tasks and opportunities.</p>
+  </section>
+
+  <div id="message"></div>
+
+  <section id="authSection" class="panel">
+    <h2 id="authTitle">Create your account</h2>
+    <p class="muted">Register for free to explore the platform.</p>
+
+    <div id="nameField">
+      <label>Full name</label>
+      <input id="fullName" placeholder="Enter your full name">
+    </div>
+
+    <label>Email address</label>
+    <input id="email" type="email" placeholder="you@example.com">
+
+    <label>Password</label>
+    <input id="password" type="password" placeholder="At least 8 characters">
+
+    <button id="authBtn" onclick="authenticate()">Create account</button>
+    <p class="muted" id="switchText">Already registered? <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Log in</a></p>
+  </section>
+
+  <section id="dashboard" class="hidden">
+    <div class="panel">
+      <p class="muted">WELCOME</p>
+      <h2 id="memberName">Member</h2>
+      <p>Account status: <span class="status" id="accountStatus">Registered</span></p>
+      <p class="muted">Your account dashboard.</p>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <h3>Task wallet</h3>
+        <h2 id="taskBalance">KSh 0.00</h2>
+        <p class="muted">Pending: <span id="taskPending">KSh 0.00</span></p>
+      </div>
+      <div class="panel">
+        <h3>Referral wallet</h3>
+        <h2 id="referralBalance">KSh 0.00</h2>
+        <p class="muted">Pending: <span id="referralPending">KSh 0.00</span></p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Available tasks</h2>
+      <p class="muted">Browse published opportunities below.</p>
+      <div id="taskList">Loading tasks...</div>
+    </div>
+
+    <div class="panel">
+      <h2>Account activation</h2>
+      <p class="muted">Your account is currently <strong id="activationStatus">registered</strong>.</p>
+      <p class="muted">The activation and payment process is not yet enabled. No payment should be sent through this test version.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Referral programme</h2>
+      <p class="muted" id="referralInfo">Referral access is available to activated members only. Referral rewards and withdrawals are not yet enabled.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  EQUI_EARN-AFRICA © 2026 · WORK • EARN • GROW
+  <p>Opportunities are subject to task requirements and review.</p>
+</footer>
+
+<script>
+const SUPABASE_URL = "https://bzmkvybtvajwcixsvkja.supabase.co";
+const SUPABASE_KEY = "sb_publishable_TMstsd1FC45CiyD7zRq7pQ_yH5GpbNV";
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let isLogin = false;
+
+function showMessage(message, type="success") {
+  const box = document.getElementById("message");
+  box.textContent = message;
+  box.className = type;
+  box.style.display = "block";
+}
+
+function toggleAuth() {
+  isLogin = !isLogin;
+  document.getElementById("authTitle").textContent = isLogin ? "Welcome back" : "Create your account";
+  document.getElementById("authBtn").textContent = isLogin ? "Log in" : "Create account";
+  document.getElementById("nameField").classList.toggle("hidden", isLogin);
+  document.getElementById("switchText").innerHTML = isLogin
+    ? 'New here? <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Create account</a>'
+    : 'Already registered? <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Log in</a>';
+}
+
+async function authenticate() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const fullName = document.getElementById("fullName").value.trim();
+  const btn = document.getElementById("authBtn");
+
+  if (!email || !password || (!isLogin && !fullName)) {
+    return showMessage("Please complete all required fields.", "error");
+  }
+
+  if (password.length < 8) {
+    return showMessage("Password must have at least 8 characters.", "error");
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Please wait...";
+
+  try {
+    let result;
+
+    if (isLogin) {
+      result = await db.auth.signInWithPassword({email, password});
+    } else {
+      result = await db.auth.signUp({
+        email,
+        password,
+        options: {data: {full_name: fullName}}
+      });
+    }
+
+    if (result.error) throw result.error;
+
+    if (!isLogin && !result.data.session) {
+      showMessage("Registration received! Check your email to confirm your account before logging in.");
+      toggleAuth();
+    } else {
+      showMessage(isLogin ? "Login successful!" : "Account created!");
+      await loadDashboard();
+    }
+  } catch (error) {
+    showMessage(error.message || "Something went wrong.", "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = isLogin ? "Log in" : "Create account";
+  }
+}
+
+async function loadDashboard() {
+  const {data: {user}} = await db.auth.getUser();
+
+  if (!user) return;
+
+  document.getElementById("authSection").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+  document.getElementById("logoutBtn").hidden = false;
+
+  const {data: profile, error: profileError} = await db
+    .from("profiles").select("*").eq("id", user.id).single();
+
+  if (profileError) {
+    showMessage("Could not load your profile: " + profileError.message, "error");
+    return;
+  }
+
+  document.getElementById("memberName").textContent = profile.full_name || "Member";
+  document.getElementById("accountStatus").textContent = profile.account_status;
+  document.getElementById("activationStatus").textContent = profile.account_status;
+
+  const {data: wallets, error: walletError} = await db
+    .from("wallets").select("*").eq("user_id", user.id);
+
+  if (!walletError && wallets) {
+    const task = wallets.find(w => w.wallet_type === "task");
+    const referral = wallets.find(w => w.wallet_type === "referral");
+
+    if (task) {
+      document.getElementById("taskBalance").textContent = money(task.available_balance);
+      document.getElementById("taskPending").textContent = money(task.pending_balance);
+    }
+
+    if (referral) {
+      document.getElementById("referralBalance").textContent = money(referral.available_balance);
+      document.getElementById("referralPending").textContent = money(referral.pending_balance);
+    }
+  }
+
+  document.getElementById("referralInfo").textContent =
+    profile.account_status === "active"
+      ? "Your referral code: " + profile.referral_code + ". Referral rewards are not yet enabled."
+      : "Referral access is reserved for activated members.";
+
+  await loadTasks();
+}
+
+function money(amount) {
+  return "KSh " + Number(amount || 0).toFixed(2);
+}
+
+async function loadTasks() {
+  const list = document.getElementById("taskList");
+  const {data, error} = await db.from("tasks")
+    .select("id,title,description,payout,deadline")
+    .eq("status", "published")
+    .order("created_at", {ascending:false});
+
+  if (error) {
+    list.textContent = "Unable to load tasks: " + error.message;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    list.textContent = "No published tasks yet. Please check again later.";
+    return;
+  }
+
+  list.innerHTML = "";
+
+  data.forEach(task => {
+    const item = document.createElement("div");
+    item.className = "task";
+
+    const title = document.createElement("h3");
+    title.textContent = task.title;
+
+    const description = document.createElement("p");
+    description.textContent = task.description;
+
+    const payout = document.createElement("strong");
+    payout.textContent = "Payout: " + money(task.payout);
+
+    item.append(title, description, payout);
+    list.appendChild(item);
+  });
+}
+
+async function logout() {
+  await db.auth.signOut();
+  location.reload();
+}
+
+db.auth.onAuthStateChange((event, session) => {
+  if (session) {
+    setTimeout(() => loadDashboard(), 0);
+  }
+});
+
+(async function start() {
+  const {data: {session}} = await db.auth.getSession();
+  if (session) await loadDashboard();
+})();
+</script>
+</body>
+</html>
