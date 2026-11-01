@@ -1,0 +1,253 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EQUI EARN AFRICA | Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#071b17;color:#fff;font-family:Arial,sans-serif}
+header{padding:20px;background:#102a23;border-bottom:1px solid #315346}
+h1{color:#35d39a;font-size:22px}
+main{max-width:1000px;margin:auto;padding:20px}
+.panel{background:#102a23;border:1px solid #315346;border-radius:12px;padding:18px;margin:16px 0}
+input,textarea,select{width:100%;padding:12px;margin:8px 0 15px;background:#071b17;color:white;border:1px solid #426052;border-radius:7px}
+button{padding:12px 18px;border:0;border-radius:7px;background:#35d39a;color:#06251b;font-weight:bold;cursor:pointer}
+.secondary{background:#315346;color:white}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{text-align:left;padding:10px;border-bottom:1px solid #315346}
+.table-wrap{overflow-x:auto}
+.muted{color:#a8bbb3}
+.hidden{display:none}
+#message{padding:12px;margin:12px 0;border-radius:7px}
+</style>
+</head>
+<body>
+<header>
+<h1>EQUI_EARN-AFRICA</h1>
+<p>Administrator Control Panel</p>
+<button class="secondary" onclick="logout()">Log out</button>
+</header>
+
+<main>
+<div id="message" class="hidden"></div>
+
+<section id="loginPanel" class="panel">
+<h2>Admin access</h2>
+<p class="muted">Log in using your administrator account.</p>
+<label>Email</label>
+<input id="email" type="email" placeholder="Admin email">
+<label>Password</label>
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Log in</button>
+</section>
+
+<section id="adminPanel" class="hidden">
+<div class="panel">
+<h2>Welcome, Administrator</h2>
+<p class="muted">Manage members and published tasks.</p>
+</div>
+
+<div class="panel">
+<h2>Publish a new task</h2>
+<label>Task title</label>
+<input id="title" placeholder="Example: Transcription task">
+<label>Description</label>
+<textarea id="description" rows="3" placeholder="Describe the task"></textarea>
+<label>Instructions</label>
+<textarea id="instructions" rows="3" placeholder="Explain how to complete it"></textarea>
+<label>Deliverables</label>
+<input id="deliverables" placeholder="What should the member submit?">
+<label>Member payout (KSh)</label>
+<input id="payout" type="number" min="1" step="0.01" placeholder="Example: 150">
+<label>Number of available slots</label>
+<input id="slots" type="number" min="1" value="1">
+<label>Deadline (optional)</label>
+<input id="deadline" type="datetime-local">
+<button onclick="publishTask()">Publish task</button>
+</div>
+
+<div class="panel">
+<h2>Registered members</h2>
+<button onclick="loadMembers()">Refresh members</button>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Joined</th></tr></thead>
+<tbody id="members"></tbody>
+</table>
+</div>
+</div>
+
+<div class="panel">
+<h2>Published tasks</h2>
+<button onclick="loadTasks()">Refresh tasks</button>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Task</th><th>Payout</th><th>Slots</th><th>Status</th></tr></thead>
+<tbody id="tasks"></tbody>
+</table>
+</div>
+</div>
+
+<div class="panel">
+<h2>Withdrawal requests</h2>
+<button onclick="loadWithdrawals()">Refresh withdrawals</button>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Member ID</th><th>Wallet</th><th>Amount</th><th>Status</th></tr></thead>
+<tbody id="withdrawals"></tbody>
+</table>
+</div>
+</div>
+</section>
+</main>
+
+<script>
+const URL="https://bzmkvybtvajwcixsvkja.supabase.co";
+const KEY="sb_publishable_TMstsd1FC45CiyD7zRq7pQ_yH5GpbNV";
+const db=window.supabase.createClient(URL,KEY);
+
+function message(text){
+ const box=document.getElementById("message");
+ box.textContent=text;
+ box.classList.remove("hidden");
+}
+
+async function login(){
+ const email=document.getElementById("email").value.trim();
+ const password=document.getElementById("password").value;
+ const {data,error}=await db.auth.signInWithPassword({email,password});
+ if(error){message(error.message);return}
+ await checkAdmin();
+}
+
+async function checkAdmin(){
+ const {data:{user}}=await db.auth.getUser();
+ if(!user){
+  document.getElementById("loginPanel").classList.remove("hidden");
+  document.getElementById("adminPanel").classList.add("hidden");
+  return;
+ }
+
+ const {data:profile,error}=await db.from("profiles")
+  .select("full_name,role").eq("id",user.id).single();
+
+ if(error || !profile || profile.role!=="admin"){
+  message("Access denied. This account does not have administrator privileges.");
+  await db.auth.signOut();
+  return;
+ }
+
+ document.getElementById("loginPanel").classList.add("hidden");
+ document.getElementById("adminPanel").classList.remove("hidden");
+ message("Administrator access verified.");
+ await Promise.all([loadMembers(),loadTasks(),loadWithdrawals()]);
+}
+
+async function publishTask(){
+ const title=document.getElementById("title").value.trim();
+ const description=document.getElementById("description").value.trim();
+ const payout=Number(document.getElementById("payout").value);
+ const slots=Number(document.getElementById("slots").value);
+ const {data:{user}}=await db.auth.getUser();
+
+ if(!title || !description || payout<=0 || slots<1){
+  message("Enter a title, description, valid payout and number of slots.");
+  return;
+ }
+
+ const deadlineValue=document.getElementById("deadline").value;
+ const {error}=await db.from("tasks").insert({
+  title,
+  description,
+  instructions:document.getElementById("instructions").value,
+  deliverables:document.getElementById("deliverables").value,
+  payout,
+  total_slots:slots,
+  deadline:deadlineValue ? new Date(deadlineValue).toISOString() : null,
+  status:"published",
+  created_by:user.id
+ });
+
+ if(error){message("Task could not be published: "+error.message);return}
+ message("Task published successfully.");
+ ["title","description","instructions","deliverables","payout","deadline"].forEach(id=>document.getElementById(id).value="");
+ document.getElementById("slots").value=1;
+ await loadTasks();
+}
+
+async function loadMembers(){
+ const body=document.getElementById("members");
+ body.replaceChildren();
+ const {data,error}=await db.from("profiles")
+  .select("full_name,role,account_status,created_at")
+  .order("created_at",{ascending:false});
+
+ if(error){message("Members: "+error.message);return}
+ data.forEach(member=>{
+  const tr=document.createElement("tr");
+  [member.full_name||"Member",member.role,member.account_status,
+   new Date(member.created_at).toLocaleDateString()].forEach(value=>{
+    const td=document.createElement("td");
+    td.textContent=value;
+    tr.appendChild(td);
+   });
+  body.appendChild(tr);
+ });
+}
+
+async function loadTasks(){
+ const body=document.getElementById("tasks");
+ body.replaceChildren();
+ const {data,error}=await db.from("tasks")
+  .select("title,payout,total_slots,filled_slots,status")
+  .order("created_at",{ascending:false});
+
+ if(error){message("Tasks: "+error.message);return}
+ data.forEach(task=>{
+  const tr=document.createElement("tr");
+  [task.title,"KSh "+Number(task.payout).toFixed(2),
+   task.filled_slots+"/"+task.total_slots,task.status].forEach(value=>{
+    const td=document.createElement("td");
+    td.textContent=value;
+    tr.appendChild(td);
+   });
+  body.appendChild(tr);
+ });
+}
+
+async function loadWithdrawals(){
+ const body=document.getElementById("withdrawals");
+ body.replaceChildren();
+ const {data,error}=await db.from("withdrawal_requests")
+  .select("user_id,wallet_type,amount,status")
+  .order("requested_at",{ascending:false});
+
+ if(error){message("Withdrawals: "+error.message);return}
+ data.forEach(item=>{
+  const tr=document.createElement("tr");
+  [item.user_id.slice(0,8)+"...",item.wallet_type,
+   "KSh "+Number(item.amount).toFixed(2),item.status].forEach(value=>{
+    const td=document.createElement("td");
+    td.textContent=value;
+    tr.appendChild(td);
+   });
+  body.appendChild(tr);
+ });
+}
+
+async function logout(){
+ await db.auth.signOut();
+ location.reload();
+}
+
+(async()=>{
+ const {data:{session}}=await db.auth.getSession();
+ if(session) await checkAdmin();
+})();
+</script>
+</body>
+  </html>
+  
