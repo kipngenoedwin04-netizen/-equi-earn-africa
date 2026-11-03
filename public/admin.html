@@ -1,0 +1,359 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EQUI EARN AFRICA | Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #07130f;
+      color: #f1f5f2;
+      font-family: Arial, sans-serif;
+    }
+    header {
+      padding: 20px;
+      background: #10271e;
+      border-bottom: 1px solid #24523d;
+    }
+    header h2 { margin: 0; color: #e9bd43; }
+    main { max-width: 1000px; margin: auto; padding: 18px; }
+    .card {
+      background: #10231b;
+      border: 1px solid #28513d;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    h3 { color: #e9bd43; margin-top: 0; }
+    input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin: 7px 0;
+      border-radius: 7px;
+      border: 1px solid #456653;
+      font-size: 15px;
+    }
+    input, textarea {
+      background: #07130f;
+      color: white;
+    }
+    textarea { min-height: 85px; }
+    button {
+      background: #d6a82e;
+      color: #10170f;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .5; }
+    .hidden { display: none; }
+    .item {
+      padding: 12px;
+      margin: 9px 0;
+      border: 1px solid #345644;
+      border-radius: 8px;
+      overflow-wrap: anywhere;
+    }
+    .muted { color: #a8b9ae; font-size: 13px; }
+    #message { white-space: pre-wrap; color: #f4cf65; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h2>EQUI EARN AFRICA</h2>
+  <div class="muted">ADMIN CONTROL PANEL · WORK • EARN • GROW</div>
+</header>
+
+<main>
+  <div id="loginBox" class="card">
+    <h3>Administrator Login</h3>
+    <input id="email" type="email" placeholder="Admin email">
+    <input id="password" type="password" placeholder="Password">
+    <button id="loginBtn" onclick="login()">LOGIN</button>
+    <p id="loginMessage"></p>
+  </div>
+
+  <section id="dashboard" class="hidden">
+    <div class="card">
+      <h3>Admin Dashboard</h3>
+      <p id="welcome" class="muted"></p>
+      <button onclick="loadAll()">REFRESH DATA</button>
+      <button onclick="logout()">LOG OUT</button>
+    </div>
+
+    <div class="card">
+      <h3>Publish New Task</h3>
+      <form id="taskForm">
+        <input id="taskTitle" placeholder="Task title" required>
+        <textarea id="taskDescription" placeholder="Task description" required></textarea>
+        <textarea id="taskInstructions" placeholder="Instructions" required></textarea>
+        <textarea id="taskDeliverables" placeholder="Expected deliverables" required></textarea>
+        <input id="taskPayout" type="number" min="1" placeholder="Payout (KSh)" required>
+        <input id="taskSlots" type="number" min="1" placeholder="Available slots" required>
+        <label class="muted">Deadline</label>
+        <input id="taskDeadline" type="date" required>
+        <button type="submit">PUBLISH TASK</button>
+      </form>
+      <p id="taskMessage"></p>
+    </div>
+
+    <div class="card">
+      <h3>Registered Members</h3>
+      <div id="membersList" class="muted">Loading members...</div>
+    </div>
+
+    <div class="card">
+      <h3>Published Tasks</h3>
+      <div id="tasksList" class="muted">Loading tasks...</div>
+    </div>
+
+    <div class="card">
+      <h3>Withdrawal Requests</h3>
+      <div id="withdrawalsList" class="muted">Loading requests...</div>
+      <p class="muted">Viewing only. Approvals and payments are not enabled in this version.</p>
+    </div>
+  </section>
+
+  <p id="message"></p>
+</main>
+
+<script>
+const SUPABASE_URL = "https://bzmkvybtvajwcixsvkja.supabase.co";
+const SUPABASE_KEY = "sb_publishable_TMstsd1FC45CiyD7zRq7pQ_yH5GpbNV";
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentAdmin = null;
+
+function showMessage(id, message) {
+  document.getElementById(id).textContent = message;
+}
+
+async function login() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const btn = document.getElementById("loginBtn");
+
+  btn.disabled = true;
+  showMessage("loginMessage", "Signing in...");
+
+  const { data, error } = await db.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  btn.disabled = false;
+
+  if (error) {
+    showMessage("loginMessage", error.message);
+    return;
+  }
+
+  await checkAdmin(data.user);
+}
+
+async function checkAdmin(user) {
+  const { data: profile, error } = await db
+    .from("profiles")
+    .select("full_name, role, account_status")
+    .eq("id", user.id)
+    .single();
+
+  if (error || !profile || profile.role !== "admin") {
+    await db.auth.signOut();
+    showMessage("loginMessage", "Access denied. Administrator account required.");
+    return;
+  }
+
+  currentAdmin = user;
+  document.getElementById("loginBox").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+  showMessage("welcome", "Welcome, " + (profile.full_name || "Administrator"));
+  await loadAll();
+}
+
+async function loadAll() {
+  await Promise.all([
+    loadMembers(),
+    loadTasks(),
+    loadWithdrawals()
+  ]);
+}
+
+async function loadMembers() {
+  const box = document.getElementById("membersList");
+  box.textContent = "Loading...";
+
+  const { data, error } = await db
+    .from("profiles")
+    .select("id, full_name, role, account_status, created_at")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    box.textContent = "Could not load members: " + error.message;
+    return;
+  }
+
+  box.innerHTML = "";
+
+  if (!data.length) {
+    box.textContent = "No members found.";
+    return;
+  }
+
+  data.forEach(member => {
+    const item = document.createElement("div");
+    item.className = "item";
+
+    const name = document.createElement("strong");
+    name.textContent = member.full_name || "Unnamed member";
+
+    const details = document.createElement("p");
+    details.className = "muted";
+    details.textContent =
+      "Role: " + member.role +
+      " | Status: " + member.account_status +
+      " | Joined: " + new Date(member.created_at).toLocaleDateString();
+
+    item.append(name, details);
+    box.appendChild(item);
+  });
+}
+
+async function loadTasks() {
+  const box = document.getElementById("tasksList");
+  box.textContent = "Loading...";
+
+  const { data, error } = await db
+    .from("tasks")
+    .select("title, payout, status, total_slots, filled_slots, deadline")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    box.textContent = "Could not load tasks: " + error.message;
+    return;
+  }
+
+  box.innerHTML = "";
+
+  if (!data.length) {
+    box.textContent = "No tasks published yet.";
+    return;
+  }
+
+  data.forEach(task => {
+    const item = document.createElement("div");
+    item.className = "item";
+
+    const title = document.createElement("strong");
+    title.textContent = task.title;
+
+    const details = document.createElement("p");
+    details.className = "muted";
+    details.textContent =
+      "Payout: KSh " + task.payout +
+      " | Status: " + task.status +
+      " | Slots: " + task.filled_slots + "/" + task.total_slots +
+      " | Deadline: " + task.deadline;
+
+    item.append(title, details);
+    box.appendChild(item);
+  });
+}
+
+async function loadWithdrawals() {
+  const box = document.getElementById("withdrawalsList");
+  box.textContent = "Loading...";
+
+  const { data, error } = await db
+    .from("withdrawal_requests")
+    .select("user_id, wallet_type, amount, status, requested_at")
+    .order("requested_at", { ascending: false });
+
+  if (error) {
+    box.textContent = "Could not load withdrawals: " + error.message;
+    return;
+  }
+
+  box.innerHTML = "";
+
+  if (!data.length) {
+    box.textContent = "No withdrawal requests yet.";
+    return;
+  }
+
+  data.forEach(request => {
+    const item = document.createElement("div");
+    item.className = "item";
+
+    const details = document.createElement("p");
+    details.textContent =
+      "Member ID: " + request.user_id +
+      " | Wallet: " + request.wallet_type +
+      " | Amount: KSh " + request.amount +
+      " | Status: " + request.status;
+
+    item.appendChild(details);
+    box.appendChild(item);
+  });
+}
+
+document.getElementById("taskForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  if (!currentAdmin) return;
+
+  const btn = event.submitter;
+  btn.disabled = true;
+  showMessage("taskMessage", "Publishing task...");
+
+  const task = {
+    title: document.getElementById("taskTitle").value.trim(),
+    description: document.getElementById("taskDescription").value.trim(),
+    instructions: document.getElementById("taskInstructions").value.trim(),
+    deliverables: document.getElementById("taskDeliverables").value.trim(),
+    payout: Number(document.getElementById("taskPayout").value),
+    total_slots: Number(document.getElementById("taskSlots").value),
+    filled_slots: 0,
+    deadline: document.getElementById("taskDeadline").value,
+    status: "published",
+    created_by: currentAdmin.id
+  };
+
+  const { error } = await db.from("tasks").insert(task);
+
+  btn.disabled = false;
+
+  if (error) {
+    showMessage("taskMessage", "Task not published: " + error.message);
+    return;
+  }
+
+  showMessage("taskMessage", "Task published successfully!");
+  event.target.reset();
+  await loadTasks();
+});
+
+async function logout() {
+  await db.auth.signOut();
+  currentAdmin = null;
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("loginBox").classList.remove("hidden");
+  showMessage("loginMessage", "You have logged out.");
+}
+
+db.auth.onAuthStateChange((event, session) => {
+  if (event === "SIGNED_OUT") {
+    currentAdmin = null;
+    document.getElementById("dashboard").classList.add("hidden");
+    document.getElementById("loginBox").classList.remove("hidden");
+  }
+});
+</script>
+</body>
+</html>
