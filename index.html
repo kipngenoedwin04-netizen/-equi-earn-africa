@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#071b17">
-<title>EQUI EARN-AFRICA | Work • Earn • Grow</title>
+<title>EQUI_EARN-AFRICA | Work • Earn • Grow</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -65,16 +65,25 @@ footer{text-align:center;padding:30px;color:#8ca49a;font-size:13px}
 
   <div id="nameField">
     <label>Full name</label>
-    <input id="fullName" placeholder="Enter your full name">
+    <input id="fullName" type="text" autocomplete="name"
+      placeholder="Enter your full name">
+
+    <label>Phone number (M-Pesa)</label>
+    <input id="phone" type="tel" autocomplete="tel"
+      placeholder="07XXXXXXXX or 01XXXXXXXX">
+    <p class="small">Use a Kenyan mobile number registered with M-Pesa.</p>
   </div>
 
   <label>Email address</label>
-  <input id="email" type="email" placeholder="you@example.com">
+  <input id="email" type="email" autocomplete="email"
+    placeholder="you@example.com">
 
   <label>Password</label>
-  <input id="password" type="password" placeholder="At least 8 characters">
+  <input id="password" type="password" autocomplete="new-password"
+    placeholder="At least 8 characters">
 
   <button id="authBtn" onclick="authenticate()">Create account</button>
+
   <p class="muted" id="switchText">
     Already registered?
     <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Log in</a>
@@ -126,7 +135,7 @@ footer{text-align:center;padding:30px;color:#8ca49a;font-size:13px}
     <div id="paymentFormArea">
       <label>M-Pesa transaction code</label>
       <input id="mpesaCode" type="text" maxlength="30"
-        placeholder="Example: QAB12CDE34">
+        placeholder="Enter your M-Pesa transaction code">
 
       <button id="submitPaymentBtn" onclick="submitPayment()">
         Submit payment
@@ -142,7 +151,10 @@ footer{text-align:center;padding:30px;color:#8ca49a;font-size:13px}
   <!-- ADMIN PANEL -->
   <section id="adminPanel" class="panel hidden">
     <h2>Admin payment management</h2>
-    <p class="muted">Review submitted activation payments. Verify each transaction in your M-Pesa records before making a decision.</p>
+    <p class="muted">
+      Review submitted activation payments. Verify each transaction
+      in your M-Pesa records before making a decision.
+    </p>
     <button class="secondary" onclick="loadAdminPayments()">Refresh payments</button>
     <div id="adminPaymentList">Loading payment requests...</div>
   </section>
@@ -184,6 +196,25 @@ function showMessage(message, type="success") {
   box.style.display = "block";
 }
 
+function normalizeKenyanPhone(value) {
+  let phone = value.replace(/[\s()+-]/g, "");
+
+  if (phone.startsWith("0") && phone.length === 10) {
+    phone = "254" + phone.substring(1);
+  } else if (
+    (phone.startsWith("7") || phone.startsWith("1")) &&
+    phone.length === 9
+  ) {
+    phone = "254" + phone;
+  }
+
+  if (!/^254[17]\d{8}$/.test(phone)) {
+    return null;
+  }
+
+  return phone;
+}
+
 function toggleAuth() {
   isLogin = !isLogin;
 
@@ -198,20 +229,40 @@ function toggleAuth() {
   document.getElementById("switchText").innerHTML = isLogin
     ? 'New here? <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Create account</a>'
     : 'Already registered? <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Log in</a>';
+
+  document.getElementById("password").autocomplete =
+    isLogin ? "current-password" : "new-password";
 }
 
 async function authenticate() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
   const fullName = document.getElementById("fullName").value.trim();
+  const rawPhone = document.getElementById("phone").value.trim();
   const btn = document.getElementById("authBtn");
 
-  if (!email || !password || (!isLogin && !fullName)) {
-    return showMessage("Please complete all required fields.", "error");
+  if (!email || !password || (!isLogin && (!fullName || !rawPhone))) {
+    return showMessage(
+      "Please complete all required fields, including your phone number.",
+      "error"
+    );
   }
 
   if (password.length < 8) {
     return showMessage("Password must have at least 8 characters.", "error");
+  }
+
+  let normalizedPhone = null;
+
+  if (!isLogin) {
+    normalizedPhone = normalizeKenyanPhone(rawPhone);
+
+    if (!normalizedPhone) {
+      return showMessage(
+        "Enter a valid Kenyan mobile number, for example 0712345678 or 0112345678.",
+        "error"
+      );
+    }
   }
 
   btn.disabled = true;
@@ -226,14 +277,21 @@ async function authenticate() {
       result = await db.auth.signUp({
         email,
         password,
-        options: {data: {full_name: fullName}}
+        options: {
+          data: {
+            full_name: fullName,
+            phone: normalizedPhone
+          }
+        }
       });
     }
 
     if (result.error) throw result.error;
 
     if (!isLogin && !result.data.session) {
-      showMessage("Registration received! Check your email to confirm your account before logging in.");
+      showMessage(
+        "Registration received! Check your email to confirm your account before logging in."
+      );
       toggleAuth();
     } else {
       showMessage(isLogin ? "Login successful!" : "Account created!");
@@ -270,10 +328,30 @@ async function loadDashboard() {
     return;
   }
 
+  /*
+   * Save the registration phone number into profiles.phone.
+   * This also handles users who had to confirm their email
+   * before they could log in.
+   */
+  const savedPhone = user.user_metadata?.phone;
+
+  if (!profile.phone && savedPhone) {
+    const {error: phoneError} = await db
+      .from("profiles")
+      .update({phone: savedPhone})
+      .eq("id", user.id);
+
+    if (phoneError) {
+      console.error("Phone number sync failed:", phoneError.message);
+    } else {
+      profile.phone = savedPhone;
+    }
+  }
+
   currentProfile = profile;
 
   document.getElementById("memberName").textContent =
-    profile.full_name || "Member";
+    profile.full_name || user.user_metadata?.full_name || "Member";
 
   document.getElementById("accountStatus").textContent =
     profile.account_status || "registered";
@@ -403,10 +481,12 @@ async function submitPayment() {
     await loadMemberPayment();
 
   } catch (error) {
+    const message = error.message || "Payment submission failed.";
+
     showMessage(
-      error.message.includes("duplicate")
+      message.toLowerCase().includes("duplicate")
         ? "This M-Pesa transaction code has already been submitted."
-        : error.message,
+        : message,
       "error"
     );
   } finally {
@@ -459,14 +539,14 @@ async function loadAdminPayments() {
     const heading = document.createElement("h3");
     heading.textContent = member?.full_name || "Member";
 
+    const phone = document.createElement("p");
+    phone.textContent = "M-Pesa phone: " + (member?.phone || "Not provided");
+
     const code = document.createElement("p");
     code.textContent = "M-Pesa code: " + payment.mpesa_code;
 
     const amount = document.createElement("p");
     amount.textContent = "Amount: " + money(payment.amount);
-
-    const phone = document.createElement("p");
-    phone.textContent = "Phone: " + (member?.phone || "Not provided");
 
     const status = document.createElement("p");
     status.textContent = "Status: " + payment.status.toUpperCase();
@@ -475,7 +555,7 @@ async function loadAdminPayments() {
     date.textContent = "Submitted: " +
       new Date(payment.created_at).toLocaleString();
 
-    item.append(heading, code, amount, phone, status, date);
+    item.append(heading, phone, code, amount, status, date);
 
     if (payment.status === "pending") {
       const actions = document.createElement("div");
@@ -580,5 +660,4 @@ db.auth.onAuthStateChange((event, session) => {
 })();
 </script>
 </body>
-  </html>
-  
+</html>
