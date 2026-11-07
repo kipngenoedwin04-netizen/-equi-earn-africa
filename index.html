@@ -7,7 +7,6 @@
 <meta name="theme-color" content="#071b17">
 <title>EQUI_EARN-AFRICA | Work • Earn • Grow</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#071b17;color:#f5f7f5;font-family:Arial,sans-serif}
@@ -35,15 +34,35 @@ footer{text-align:center;padding:30px;color:#8ca49a;font-size:13px}
 #message{padding:12px;border-radius:8px;margin:12px 0;display:none}
 .error{background:#572b2b;color:#ffdada}
 .success{background:#174b38;color:#baffd9}
-.payment-details{background:#071b17;border:1px solid #35d39a;padding:16px;border-radius:10px;margin:15px 0}
-.payment-details p{margin:9px 0}
-.payment-details strong{color:#35d39a}
 .payment-item{border:1px solid #36564b;padding:15px;border-radius:10px;margin:12px 0;overflow-wrap:anywhere}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .small{font-size:12px;color:#a8bbb3}
+
+/* ACCOUNT ACTIVATION BUTTON */
+.activate-link{
+  display:block;
+  width:100%;
+  max-width:380px;
+  margin:25px auto;
+  padding:19px 15px;
+  text-align:center;
+  background:linear-gradient(135deg,#f5d76e,#d4af37,#b8860b);
+  color:#071b17;
+  font-size:25px;
+  font-weight:900;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  text-decoration:none;
+  border-radius:12px;
+  border:2px solid #ffe69a;
+  box-shadow:0 5px 20px rgba(212,175,55,.25);
+}
+.activate-link:hover{
+  background:#ffe69a;
+  transform:scale(1.02);
+}
 </style>
 </head>
-
 <body>
 <header>
   <div class="brand">EQUI_<span>EARN</span>-AFRICA</div>
@@ -65,23 +84,17 @@ footer{text-align:center;padding:30px;color:#8ca49a;font-size:13px}
 
   <div id="nameField">
     <label>Full name</label>
-    <input id="fullName" type="text" autocomplete="name"
-      placeholder="Enter your full name">
-
+    <input id="fullName" type="text" autocomplete="name" placeholder="Enter your full name">
     <label>Phone number (M-Pesa)</label>
-    <input id="phone" type="tel" autocomplete="tel"
-      placeholder="07XXXXXXXX or 01XXXXXXXX">
+    <input id="phone" type="tel" autocomplete="tel" placeholder="07XXXXXXXX or 01XXXXXXXX">
     <p class="small">Use a Kenyan mobile number registered with M-Pesa.</p>
   </div>
 
   <label>Email address</label>
-  <input id="email" type="email" autocomplete="email"
-    placeholder="you@example.com">
+  <input id="email" type="email" autocomplete="email" placeholder="you@example.com">
 
   <label>Password</label>
-  <input id="password" type="password" autocomplete="new-password"
-    placeholder="At least 8 characters">
-
+  <input id="password" type="password" autocomplete="new-password" placeholder="At least 8 characters">
   <button id="authBtn" onclick="authenticate()">Create account</button>
 
   <p class="muted" id="switchText">
@@ -91,7 +104,6 @@ footer{text-align:center;padding:30px;color:#8ca49a;font-size:13px}
 </section>
 
 <section id="dashboard" class="hidden">
-
   <div class="panel">
     <p class="muted">WELCOME</p>
     <h2 id="memberName">Member</h2>
@@ -105,7 +117,6 @@ footer{text-align:center;padding:30px;color:#8ca49a;font-size:13px}
       <h2 id="taskBalance">KSh 0.00</h2>
       <p class="muted">Pending: <span id="taskPending">KSh 0.00</span></p>
     </div>
-
     <div class="panel">
       <h3>Referral wallet</h3>
       <h2 id="referralBalance">KSh 0.00</h2>
@@ -115,36 +126,19 @@ footer{text-align:center;padding:30px;color:#8ca49a;font-size:13px}
 
   <!-- MEMBER ACTIVATION -->
   <section id="activationPanel" class="panel hidden">
-    <h2>Account activation</h2>
-    <p class="muted">Pay the one-time activation fee of KSh 350 using M-Pesa PayBill.</p>
-
-    <div class="payment-details">
-      <p>Payment method: <strong>M-Pesa PayBill</strong></p>
-      <p>PayBill number: <strong>247247</strong></p>
-      <p>Account number: <strong>0230187637829</strong></p>
-      <p>Activation fee: <strong>KSh 350</strong></p>
-    </div>
+    <h2>Activate Your Account</h2>
 
     <p class="muted">
-      After paying, enter the M-Pesa transaction code below.
-      Your payment will be checked by an administrator.
+      Click the button below to activate your account and gain access to daily tasks.
     </p>
 
-    <div id="paymentStatusArea"></div>
+    <a href="payment.html" class="activate-link">
+      CLICK HERE
+    </a>
 
-    <div id="paymentFormArea">
-      <label>M-Pesa transaction code</label>
-      <input id="mpesaCode" type="text" maxlength="30"
-        placeholder="Enter your M-Pesa transaction code">
-
-      <button id="submitPaymentBtn" onclick="submitPayment()">
-        Submit payment
-      </button>
-    </div>
-
-    <p class="small">
-      Do not submit a transaction code unless you have completed the payment.
-      Submitting a code does not guarantee approval.
+    <p class="small" style="text-align:center">
+      Complete the payment instructions on the next page.
+      Your account will be activated after administrator verification.
     </p>
   </section>
 
@@ -256,7 +250,6 @@ async function authenticate() {
 
   if (!isLogin) {
     normalizedPhone = normalizeKenyanPhone(rawPhone);
-
     if (!normalizedPhone) {
       return showMessage(
         "Enter a valid Kenyan mobile number, for example 0712345678 or 0112345678.",
@@ -328,11 +321,6 @@ async function loadDashboard() {
     return;
   }
 
-  /*
-   * Save the registration phone number into profiles.phone.
-   * This also handles users who had to confirm their email
-   * before they could log in.
-   */
   const savedPhone = user.user_metadata?.phone;
 
   if (!profile.phone && savedPhone) {
@@ -401,8 +389,6 @@ async function loadDashboard() {
 
   if (isAdmin) {
     await loadAdminPayments();
-  } else if (!isActive) {
-    await loadMemberPayment();
   }
 
   await loadTasks();
@@ -410,89 +396,6 @@ async function loadDashboard() {
 
 function money(amount) {
   return "KSh " + Number(amount || 0).toFixed(2);
-}
-
-async function loadMemberPayment() {
-  const statusArea = document.getElementById("paymentStatusArea");
-  const formArea = document.getElementById("paymentFormArea");
-
-  statusArea.textContent = "Checking your payment history...";
-  formArea.classList.add("hidden");
-
-  const {data, error} = await db
-    .from("activation_payments")
-    .select("mpesa_code,amount,status,created_at")
-    .eq("user_id", currentUser.id)
-    .order("created_at", {ascending:false})
-    .limit(1);
-
-  if (error) {
-    statusArea.textContent = "Unable to check payment: " + error.message;
-    return;
-  }
-
-  const latest = data && data.length ? data[0] : null;
-
-  if (latest && latest.status === "pending") {
-    statusArea.textContent =
-      "Payment submitted. Your transaction is awaiting admin verification. Code: " +
-      latest.mpesa_code;
-    return;
-  }
-
-  if (latest && latest.status === "rejected") {
-    statusArea.textContent =
-      "Your previous payment submission was rejected. Please check your M-Pesa transaction details before submitting again.";
-    formArea.classList.remove("hidden");
-    return;
-  }
-
-  statusArea.textContent = "No payment submission found.";
-  formArea.classList.remove("hidden");
-}
-
-async function submitPayment() {
-  const codeInput = document.getElementById("mpesaCode");
-  const btn = document.getElementById("submitPaymentBtn");
-
-  const code = codeInput.value.trim().toUpperCase();
-
-  if (!code || code.length < 6) {
-    return showMessage("Enter a valid M-Pesa transaction code.", "error");
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Submitting...";
-
-  try {
-    const {error} = await db
-      .from("activation_payments")
-      .insert({
-        user_id: currentUser.id,
-        mpesa_code: code,
-        amount: 350,
-        status: "pending"
-      });
-
-    if (error) throw error;
-
-    codeInput.value = "";
-    showMessage("Payment code submitted. Await admin verification.");
-    await loadMemberPayment();
-
-  } catch (error) {
-    const message = error.message || "Payment submission failed.";
-
-    showMessage(
-      message.toLowerCase().includes("duplicate")
-        ? "This M-Pesa transaction code has already been submitted."
-        : message,
-      "error"
-    );
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Submit payment";
-  }
 }
 
 async function loadAdminPayments() {
@@ -532,7 +435,6 @@ async function loadAdminPayments() {
 
   payments.forEach(payment => {
     const member = profileMap.get(payment.user_id);
-
     const item = document.createElement("div");
     item.className = "payment-item";
 
