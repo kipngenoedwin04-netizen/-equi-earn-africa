@@ -2,39 +2,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#071b17">
-  <title>EQUI_EARN-AFRICA | Work • Earn • Grow</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0;background:#071b17;color:#f5f7f5;font-family:Arial,sans-serif}
-    header{padding:20px 6%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #244039}
-    .brand{font-size:21px;font-weight:800;color:#35d39a}
-    .brand span{color:white}
-    button{border:0;border-radius:9px;padding:12px 18px;background:#35d39a;color:#06251b;font-weight:bold;cursor:pointer}
-    button.secondary{background:#203d34;color:white}
-    button:disabled{opacity:.5}
-    main{max-width:1050px;margin:auto;padding:35px 20px}
-    .hero{padding:35px 10px;text-align:center}
-    .hero h1{font-size:clamp(32px,7vw,55px);margin:10px 0}
-    .hero h1 span{color:#35d39a}
-    .muted{color:#a8bbb3;line-height:1.6}
-    .panel{background:#102a23;border:1px solid #24483d;border-radius:15px;padding:22px;margin:18px 0}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
-    input{width:100%;padding:14px;margin:8px 0 15px;background:#071b17;border:1px solid #36564b;border-radius:8px;color:white}
-    label{font-size:14px;color:#c4d5cd}
-    .hidden{display:none!important}
-    .status{display:inline-block;background:#24483d;color:#75e8b9;padding:7px 12px;border-radius:20px;font-size:12px}
-    .task{border:1px solid #36564b;padding:16px;border-radius:12px;margin:12px 0}
-    .task h3{margin-top:0}
-    footer{text-align:center;padding:30px;color:#8ca49a;font-size:13px}
-    #message{padding:12px;border-radius:8px;margin:12px 0;display:none}
-    .error{background:#572b2b;color:#ffdada}
-    .success{background:#174b38;color:#baffd9}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#071b17">
+<title>EQUI EARN-AFRICA | Work • Earn • Grow</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#071b17;color:#f5f7f5;font-family:Arial,sans-serif}
+header{padding:20px 6%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #244039}
+.brand{font-size:21px;font-weight:800;color:#35d39a}
+.brand span{color:white}
+button{border:0;border-radius:9px;padding:12px 18px;background:#35d39a;color:#06251b;font-weight:bold;cursor:pointer}
+button.secondary{background:#203d34;color:white}
+button.danger{background:#8b3030;color:white}
+button:disabled{opacity:.5;cursor:not-allowed}
+main{max-width:1050px;margin:auto;padding:35px 20px}
+.hero{padding:35px 10px;text-align:center}
+.hero h1{font-size:clamp(32px,7vw,55px);margin:10px 0}
+.hero h1 span{color:#35d39a}
+.muted{color:#a8bbb3;line-height:1.6}
+.panel{background:#102a23;border:1px solid #24483d;border-radius:15px;padding:22px;margin:18px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
+input{width:100%;padding:14px;margin:8px 0 15px;background:#071b17;border:1px solid #36564b;border-radius:8px;color:white}
+label{font-size:14px;color:#c4d5cd}
+.hidden{display:none!important}
+.status{display:inline-block;background:#24483d;color:#75e8b9;padding:7px 12px;border-radius:20px;font-size:12px}
+.task{border:1px solid #36564b;padding:16px;border-radius:12px;margin:12px 0}
+.task h3{margin-top:0}
+footer{text-align:center;padding:30px;color:#8ca49a;font-size:13px}
+#message{padding:12px;border-radius:8px;margin:12px 0;display:none}
+.error{background:#572b2b;color:#ffdada}
+.success{background:#174b38;color:#baffd9}
+.payment-details{background:#071b17;border:1px solid #35d39a;padding:16px;border-radius:10px;margin:15px 0}
+.payment-details p{margin:9px 0}
+.payment-details strong{color:#35d39a}
+.payment-item{border:1px solid #36564b;padding:15px;border-radius:10px;margin:12px 0;overflow-wrap:anywhere}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.small{font-size:12px;color:#a8bbb3}
+</style>
 </head>
+
 <body>
 <header>
   <div class="brand">EQUI_<span>EARN</span>-AFRICA</div>
@@ -42,76 +51,120 @@
 </header>
 
 <main>
-  <section class="hero">
-    <p class="status">WORK • EARN • GROW</p>
-    <h1>Build Skills. <span>Earn.</span> Grow.</h1>
-    <p class="muted">A platform connecting people to legitimate digital tasks and opportunities.</p>
+<section class="hero">
+  <p class="status">WORK • EARN • GROW</p>
+  <h1>Build Skills. <span>Earn.</span> Grow.</h1>
+  <p class="muted">A platform connecting people to legitimate digital tasks and opportunities.</p>
+</section>
+
+<div id="message"></div>
+
+<section id="authSection" class="panel">
+  <h2 id="authTitle">Create your account</h2>
+  <p class="muted">Register for free to explore the platform.</p>
+
+  <div id="nameField">
+    <label>Full name</label>
+    <input id="fullName" placeholder="Enter your full name">
+  </div>
+
+  <label>Email address</label>
+  <input id="email" type="email" placeholder="you@example.com">
+
+  <label>Password</label>
+  <input id="password" type="password" placeholder="At least 8 characters">
+
+  <button id="authBtn" onclick="authenticate()">Create account</button>
+  <p class="muted" id="switchText">
+    Already registered?
+    <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Log in</a>
+  </p>
+</section>
+
+<section id="dashboard" class="hidden">
+
+  <div class="panel">
+    <p class="muted">WELCOME</p>
+    <h2 id="memberName">Member</h2>
+    <p>Account status: <span class="status" id="accountStatus">Registered</span></p>
+    <p class="muted">Your account dashboard.</p>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h3>Task wallet</h3>
+      <h2 id="taskBalance">KSh 0.00</h2>
+      <p class="muted">Pending: <span id="taskPending">KSh 0.00</span></p>
+    </div>
+
+    <div class="panel">
+      <h3>Referral wallet</h3>
+      <h2 id="referralBalance">KSh 0.00</h2>
+      <p class="muted">Pending: <span id="referralPending">KSh 0.00</span></p>
+    </div>
+  </div>
+
+  <!-- MEMBER ACTIVATION -->
+  <section id="activationPanel" class="panel hidden">
+    <h2>Account activation</h2>
+    <p class="muted">Pay the one-time activation fee of KSh 350 using M-Pesa PayBill.</p>
+
+    <div class="payment-details">
+      <p>Payment method: <strong>M-Pesa PayBill</strong></p>
+      <p>PayBill number: <strong>247247</strong></p>
+      <p>Account number: <strong>0230187637829</strong></p>
+      <p>Activation fee: <strong>KSh 350</strong></p>
+    </div>
+
+    <p class="muted">
+      After paying, enter the M-Pesa transaction code below.
+      Your payment will be checked by an administrator.
+    </p>
+
+    <div id="paymentStatusArea"></div>
+
+    <div id="paymentFormArea">
+      <label>M-Pesa transaction code</label>
+      <input id="mpesaCode" type="text" maxlength="30"
+        placeholder="Example: QAB12CDE34">
+
+      <button id="submitPaymentBtn" onclick="submitPayment()">
+        Submit payment
+      </button>
+    </div>
+
+    <p class="small">
+      Do not submit a transaction code unless you have completed the payment.
+      Submitting a code does not guarantee approval.
+    </p>
   </section>
 
-  <div id="message"></div>
-
-  <section id="authSection" class="panel">
-    <h2 id="authTitle">Create your account</h2>
-    <p class="muted">Register for free to explore the platform.</p>
-
-    <div id="nameField">
-      <label>Full name</label>
-      <input id="fullName" placeholder="Enter your full name">
-    </div>
-
-    <label>Email address</label>
-    <input id="email" type="email" placeholder="you@example.com">
-
-    <label>Password</label>
-    <input id="password" type="password" placeholder="At least 8 characters">
-
-    <button id="authBtn" onclick="authenticate()">Create account</button>
-    <p class="muted" id="switchText">Already registered? <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Log in</a></p>
+  <!-- ADMIN PANEL -->
+  <section id="adminPanel" class="panel hidden">
+    <h2>Admin payment management</h2>
+    <p class="muted">Review submitted activation payments. Verify each transaction in your M-Pesa records before making a decision.</p>
+    <button class="secondary" onclick="loadAdminPayments()">Refresh payments</button>
+    <div id="adminPaymentList">Loading payment requests...</div>
   </section>
 
-  <section id="dashboard" class="hidden">
-    <div class="panel">
-      <p class="muted">WELCOME</p>
-      <h2 id="memberName">Member</h2>
-      <p>Account status: <span class="status" id="accountStatus">Registered</span></p>
-      <p class="muted">Your account dashboard.</p>
-    </div>
+  <div class="panel">
+    <h2>Available tasks</h2>
+    <p class="muted">Browse published opportunities below.</p>
+    <div id="taskList">Loading tasks...</div>
+  </div>
 
-    <div class="grid">
-      <div class="panel">
-        <h3>Task wallet</h3>
-        <h2 id="taskBalance">KSh 0.00</h2>
-        <p class="muted">Pending: <span id="taskPending">KSh 0.00</span></p>
-      </div>
-      <div class="panel">
-        <h3>Referral wallet</h3>
-        <h2 id="referralBalance">KSh 0.00</h2>
-        <p class="muted">Pending: <span id="referralPending">KSh 0.00</span></p>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>Available tasks</h2>
-      <p class="muted">Browse published opportunities below.</p>
-      <div id="taskList">Loading tasks...</div>
-    </div>
-
-    <div class="panel">
-      <h2>Account activation</h2>
-      <p class="muted">Your account is currently <strong id="activationStatus">registered</strong>.</p>
-      <p class="muted">The activation and payment process is not yet enabled. No payment should be sent through this test version.</p>
-    </div>
-
-    <div class="panel">
-      <h2>Referral programme</h2>
-      <p class="muted" id="referralInfo">Referral access is available to activated members only. Referral rewards and withdrawals are not yet enabled.</p>
-    </div>
-  </section>
+  <div class="panel">
+    <h2>Referral programme</h2>
+    <p class="muted" id="referralInfo">
+      Referral access is available to activated members only.
+    </p>
+  </div>
+</section>
 </main>
 
 <footer>
-  EQUI_EARN-AFRICA © 2026 · WORK • EARN • GROW
-  <p>Opportunities are subject to task requirements and review.</p>
+EQUI_EARN-AFRICA © 2026 · WORK • EARN • GROW
+<p>Opportunities are subject to task requirements and review.</p>
 </footer>
 
 <script>
@@ -121,6 +174,8 @@ const SUPABASE_KEY = "sb_publishable_TMstsd1FC45CiyD7zRq7pQ_yH5GpbNV";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let isLogin = false;
+let currentUser = null;
+let currentProfile = null;
 
 function showMessage(message, type="success") {
   const box = document.getElementById("message");
@@ -131,9 +186,15 @@ function showMessage(message, type="success") {
 
 function toggleAuth() {
   isLogin = !isLogin;
-  document.getElementById("authTitle").textContent = isLogin ? "Welcome back" : "Create your account";
-  document.getElementById("authBtn").textContent = isLogin ? "Log in" : "Create account";
+
+  document.getElementById("authTitle").textContent =
+    isLogin ? "Welcome back" : "Create your account";
+
+  document.getElementById("authBtn").textContent =
+    isLogin ? "Log in" : "Create account";
+
   document.getElementById("nameField").classList.toggle("hidden", isLogin);
+
   document.getElementById("switchText").innerHTML = isLogin
     ? 'New here? <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Create account</a>'
     : 'Already registered? <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Log in</a>';
@@ -178,6 +239,7 @@ async function authenticate() {
       showMessage(isLogin ? "Login successful!" : "Account created!");
       await loadDashboard();
     }
+
   } catch (error) {
     showMessage(error.message || "Something went wrong.", "error");
   } finally {
@@ -187,48 +249,83 @@ async function authenticate() {
 }
 
 async function loadDashboard() {
-  const {data: {user}} = await db.auth.getUser();
+  const {data: {user}, error: userError} = await db.auth.getUser();
 
-  if (!user) return;
+  if (userError || !user) return;
+
+  currentUser = user;
 
   document.getElementById("authSection").classList.add("hidden");
   document.getElementById("dashboard").classList.remove("hidden");
   document.getElementById("logoutBtn").hidden = false;
 
   const {data: profile, error: profileError} = await db
-    .from("profiles").select("*").eq("id", user.id).single();
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
 
   if (profileError) {
     showMessage("Could not load your profile: " + profileError.message, "error");
     return;
   }
 
-  document.getElementById("memberName").textContent = profile.full_name || "Member";
-  document.getElementById("accountStatus").textContent = profile.account_status;
-  document.getElementById("activationStatus").textContent = profile.account_status;
+  currentProfile = profile;
+
+  document.getElementById("memberName").textContent =
+    profile.full_name || "Member";
+
+  document.getElementById("accountStatus").textContent =
+    profile.account_status || "registered";
+
+  const isAdmin = profile.role === "admin";
+  const isActive = profile.account_status === "active";
+
+  document.getElementById("activationPanel").classList.toggle(
+    "hidden", isAdmin || isActive
+  );
+
+  document.getElementById("adminPanel").classList.toggle(
+    "hidden", !isAdmin
+  );
 
   const {data: wallets, error: walletError} = await db
-    .from("wallets").select("*").eq("user_id", user.id);
+    .from("wallets")
+    .select("*")
+    .eq("user_id", user.id);
 
   if (!walletError && wallets) {
     const task = wallets.find(w => w.wallet_type === "task");
     const referral = wallets.find(w => w.wallet_type === "referral");
 
     if (task) {
-      document.getElementById("taskBalance").textContent = money(task.available_balance);
-      document.getElementById("taskPending").textContent = money(task.pending_balance);
+      document.getElementById("taskBalance").textContent =
+        money(task.available_balance);
+
+      document.getElementById("taskPending").textContent =
+        money(task.pending_balance);
     }
 
     if (referral) {
-      document.getElementById("referralBalance").textContent = money(referral.available_balance);
-      document.getElementById("referralPending").textContent = money(referral.pending_balance);
+      document.getElementById("referralBalance").textContent =
+        money(referral.available_balance);
+
+      document.getElementById("referralPending").textContent =
+        money(referral.pending_balance);
     }
   }
 
   document.getElementById("referralInfo").textContent =
-    profile.account_status === "active"
-      ? "Your referral code: " + profile.referral_code + ". Referral rewards are not yet enabled."
+    isActive
+      ? "Your referral code: " + (profile.referral_code || "Not assigned") +
+        ". Referral rewards and withdrawals are not yet enabled."
       : "Referral access is reserved for activated members.";
+
+  if (isAdmin) {
+    await loadAdminPayments();
+  } else if (!isActive) {
+    await loadMemberPayment();
+  }
 
   await loadTasks();
 }
@@ -237,8 +334,197 @@ function money(amount) {
   return "KSh " + Number(amount || 0).toFixed(2);
 }
 
+async function loadMemberPayment() {
+  const statusArea = document.getElementById("paymentStatusArea");
+  const formArea = document.getElementById("paymentFormArea");
+
+  statusArea.textContent = "Checking your payment history...";
+  formArea.classList.add("hidden");
+
+  const {data, error} = await db
+    .from("activation_payments")
+    .select("mpesa_code,amount,status,created_at")
+    .eq("user_id", currentUser.id)
+    .order("created_at", {ascending:false})
+    .limit(1);
+
+  if (error) {
+    statusArea.textContent = "Unable to check payment: " + error.message;
+    return;
+  }
+
+  const latest = data && data.length ? data[0] : null;
+
+  if (latest && latest.status === "pending") {
+    statusArea.textContent =
+      "Payment submitted. Your transaction is awaiting admin verification. Code: " +
+      latest.mpesa_code;
+    return;
+  }
+
+  if (latest && latest.status === "rejected") {
+    statusArea.textContent =
+      "Your previous payment submission was rejected. Please check your M-Pesa transaction details before submitting again.";
+    formArea.classList.remove("hidden");
+    return;
+  }
+
+  statusArea.textContent = "No payment submission found.";
+  formArea.classList.remove("hidden");
+}
+
+async function submitPayment() {
+  const codeInput = document.getElementById("mpesaCode");
+  const btn = document.getElementById("submitPaymentBtn");
+
+  const code = codeInput.value.trim().toUpperCase();
+
+  if (!code || code.length < 6) {
+    return showMessage("Enter a valid M-Pesa transaction code.", "error");
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Submitting...";
+
+  try {
+    const {error} = await db
+      .from("activation_payments")
+      .insert({
+        user_id: currentUser.id,
+        mpesa_code: code,
+        amount: 350,
+        status: "pending"
+      });
+
+    if (error) throw error;
+
+    codeInput.value = "";
+    showMessage("Payment code submitted. Await admin verification.");
+    await loadMemberPayment();
+
+  } catch (error) {
+    showMessage(
+      error.message.includes("duplicate")
+        ? "This M-Pesa transaction code has already been submitted."
+        : error.message,
+      "error"
+    );
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Submit payment";
+  }
+}
+
+async function loadAdminPayments() {
+  const list = document.getElementById("adminPaymentList");
+  list.textContent = "Loading payment requests...";
+
+  const {data: payments, error} = await db
+    .from("activation_payments")
+    .select("*")
+    .order("created_at", {ascending:false});
+
+  if (error) {
+    list.textContent = "Could not load payments: " + error.message;
+    return;
+  }
+
+  if (!payments || payments.length === 0) {
+    list.textContent = "No payment requests submitted yet.";
+    return;
+  }
+
+  const userIds = [...new Set(payments.map(p => p.user_id))];
+
+  const {data: profiles, error: profileError} = await db
+    .from("profiles")
+    .select("id,full_name,phone")
+    .in("id", userIds);
+
+  if (profileError) {
+    list.textContent = "Could not load member details: " + profileError.message;
+    return;
+  }
+
+  const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
+  list.innerHTML = "";
+
+  payments.forEach(payment => {
+    const member = profileMap.get(payment.user_id);
+
+    const item = document.createElement("div");
+    item.className = "payment-item";
+
+    const heading = document.createElement("h3");
+    heading.textContent = member?.full_name || "Member";
+
+    const code = document.createElement("p");
+    code.textContent = "M-Pesa code: " + payment.mpesa_code;
+
+    const amount = document.createElement("p");
+    amount.textContent = "Amount: " + money(payment.amount);
+
+    const phone = document.createElement("p");
+    phone.textContent = "Phone: " + (member?.phone || "Not provided");
+
+    const status = document.createElement("p");
+    status.textContent = "Status: " + payment.status.toUpperCase();
+
+    const date = document.createElement("p");
+    date.textContent = "Submitted: " +
+      new Date(payment.created_at).toLocaleString();
+
+    item.append(heading, code, amount, phone, status, date);
+
+    if (payment.status === "pending") {
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const approve = document.createElement("button");
+      approve.textContent = "Approve payment";
+      approve.onclick = () => reviewPayment(payment.id, "approved");
+
+      const reject = document.createElement("button");
+      reject.textContent = "Reject payment";
+      reject.className = "danger";
+      reject.onclick = () => reviewPayment(payment.id, "rejected");
+
+      actions.append(approve, reject);
+      item.appendChild(actions);
+    }
+
+    list.appendChild(item);
+  });
+}
+
+async function reviewPayment(paymentId, decision) {
+  const confirmed = confirm(
+    "Have you verified this payment in your M-Pesa records? " +
+    "Proceed to " + decision + " it?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const {error} = await db.rpc("review_activation_payment", {
+      p_payment_id: paymentId,
+      p_decision: decision
+    });
+
+    if (error) throw error;
+
+    showMessage("Payment successfully " + decision + ".");
+    await loadAdminPayments();
+
+  } catch (error) {
+    showMessage("Review failed: " + error.message, "error");
+  }
+}
+
 async function loadTasks() {
   const list = document.getElementById("taskList");
+
   const {data, error} = await db.from("tasks")
     .select("id,title,description,payout,deadline")
     .eq("status", "published")
@@ -287,8 +573,12 @@ db.auth.onAuthStateChange((event, session) => {
 
 (async function start() {
   const {data: {session}} = await db.auth.getSession();
-  if (session) await loadDashboard();
+
+  if (session) {
+    await loadDashboard();
+  }
 })();
 </script>
 </body>
-</html>
+  </html>
+  
