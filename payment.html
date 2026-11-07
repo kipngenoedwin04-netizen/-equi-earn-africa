@@ -1,0 +1,401 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#071b17">
+<title>Account Activation | EQUI EARN-AFRICA</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: #071b17;
+  color: #f5f7f5;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  max-width: 500px;
+  margin: 30px auto;
+  padding: 25px;
+  background: #102a23;
+  border: 1px solid #35d39a;
+  border-radius: 16px;
+}
+
+h1 {
+  text-align: center;
+  color: #35d39a;
+  font-size: 27px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #a8bbb3;
+  line-height: 1.7;
+}
+
+.payment-details {
+  background: #071b17;
+  border: 1px solid #35d39a;
+  border-radius: 12px;
+  padding: 18px;
+  margin: 25px 0;
+}
+
+.detail {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid #244039;
+}
+
+.detail:last-child {
+  border-bottom: none;
+}
+
+.detail strong {
+  color: #35d39a;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+h3 {
+  color: #35d39a;
+}
+
+.instructions {
+  line-height: 1.9;
+  color: #d3ded8;
+  padding-left: 22px;
+}
+
+label {
+  display: block;
+  margin: 20px 0 8px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 15px;
+  background: #071b17;
+  border: 1px solid #36564b;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+}
+
+button {
+  width: 100%;
+  padding: 16px;
+  margin-top: 18px;
+  background: #35d39a;
+  color: #06251b;
+  border: none;
+  border-radius: 9px;
+  font-size: 17px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+
+#message {
+  padding: 12px;
+  margin-top: 15px;
+  border-radius: 8px;
+  line-height: 1.6;
+  display: none;
+}
+
+.success {
+  display: block !important;
+  background: #174b38;
+  color: #baffd9;
+}
+
+.error {
+  display: block !important;
+  background: #572b2b;
+  color: #ffdada;
+}
+
+.notice {
+  margin-top: 22px;
+  color: #a8bbb3;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.back {
+  display: block;
+  text-align: center;
+  margin-top: 25px;
+  color: #35d39a;
+  text-decoration: none;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>ACCOUNT ACTIVATION</h1>
+
+  <p class="subtitle">
+    Complete your one-time activation payment to gain
+    access to daily tasks on EQUI EARN-AFRICA.
+  </p>
+
+  <div class="payment-details">
+
+    <div class="detail">
+      <span>Payment Method</span>
+      <strong>M-PESA PAYBILL</strong>
+    </div>
+
+    <div class="detail">
+      <span>PayBill Number</span>
+      <strong>247247</strong>
+    </div>
+
+    <div class="detail">
+      <span>Account Number</span>
+      <strong>0230187637829</strong>
+    </div>
+
+    <div class="detail">
+      <span>Activation Fee</span>
+      <strong>KSh 350</strong>
+    </div>
+
+  </div>
+
+  <h3>PAYMENT INSTRUCTIONS</h3>
+
+  <ol class="instructions">
+    <li>Open M-PESA on your phone.</li>
+    <li>Select Lipa na M-PESA.</li>
+    <li>Select Pay Bill.</li>
+    <li>Enter PayBill number 247247.</li>
+    <li>Enter account number 0230187637829.</li>
+    <li>Enter KSh 350.</li>
+    <li>Confirm and complete payment.</li>
+    <li>Keep your M-PESA confirmation message.</li>
+  </ol>
+
+  <h3>SUBMIT PAYMENT CONFIRMATION</h3>
+
+  <p class="subtitle">
+    Enter the M-PESA transaction code received
+    after completing your payment.
+  </p>
+
+  <form id="paymentForm">
+
+    <label for="mpesaCode">
+      M-PESA TRANSACTION CODE
+    </label>
+
+    <input
+      id="mpesaCode"
+      type="text"
+      placeholder="Example: QWE1234567"
+      maxlength="20"
+      required
+    >
+
+    <button id="submitBtn" type="submit">
+      SUBMIT PAYMENT
+    </button>
+
+  </form>
+
+  <div id="message"></div>
+
+  <p class="notice">
+    IMPORTANT: Your account will not be activated
+    automatically after submitting your transaction code.
+    Our administrator will manually verify the payment
+    before approving your account.
+
+    Submitting a transaction code does not guarantee
+    account activation.
+  </p>
+
+  <a class="back" href="index.html">
+    BACK TO EQUI EARN-AFRICA
+  </a>
+
+</div>
+
+<script>
+const SUPABASE_URL =
+  "https://bzmkvybtvajwcixsvkja.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_TMstsd1FC45CiyD7zRq7pQ_yH5GpbNV";
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+const form = document.getElementById("paymentForm");
+const message = document.getElementById("message");
+const button = document.getElementById("submitBtn");
+
+function showMessage(text, type) {
+  message.textContent = text;
+  message.className = type;
+}
+
+async function checkLogin() {
+  const { data, error } = await db.auth.getUser();
+
+  if (error || !data.user) {
+    form.style.display = "none";
+
+    showMessage(
+      "Please log in to your EQUI EARN-AFRICA account before submitting payment.",
+      "error"
+    );
+
+    return false;
+  }
+
+  const { data: profile } = await db
+    .from("profiles")
+    .select("account_status, role")
+    .eq("id", data.user.id)
+    .single();
+
+  if (
+    profile &&
+    (profile.account_status === "active" ||
+     profile.role === "admin")
+  ) {
+    form.style.display = "none";
+
+    showMessage(
+      "Your account is already activated.",
+      "success"
+    );
+
+    return false;
+  }
+
+  const { data: payments, error: paymentError } = await db
+    .from("activation_payments")
+    .select("status")
+    .eq("user_id", data.user.id)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (paymentError) {
+    showMessage(
+      "Could not check your payment history. Please refresh.",
+      "error"
+    );
+    return false;
+  }
+
+  if (payments && payments.length > 0 &&
+      payments[0].status === "pending") {
+    form.style.display = "none";
+
+    showMessage(
+      "Your payment submission is awaiting administrator verification. Please wait for approval.",
+      "success"
+    );
+
+    return false;
+  }
+
+  form.style.display = "block";
+  return true;
+}
+
+form.addEventListener("submit", async function(event) {
+  event.preventDefault();
+
+  const code = document
+    .getElementById("mpesaCode")
+    .value.trim()
+    .toUpperCase();
+
+  if (!/^[A-Z0-9]{6,20}$/.test(code)) {
+    showMessage(
+      "Please enter a valid M-PESA transaction code.",
+      "error"
+    );
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "SUBMITTING...";
+
+  try {
+    const { data, error: authError } =
+      await db.auth.getUser();
+
+    if (authError || !data.user) {
+      throw new Error(
+        "Your session has expired. Please log in again."
+      );
+    }
+
+    const { error } = await db
+      .from("activation_payments")
+      .insert({
+        user_id: data.user.id,
+        mpesa_code: code,
+        amount: 350,
+        status: "pending"
+      });
+
+    if (error) throw error;
+
+    form.reset();
+
+    showMessage(
+      "Payment code submitted successfully! Your account is now awaiting admin verification. Please wait for approval.",
+      "success"
+    );
+
+    form.style.display = "none";
+
+  } catch (error) {
+    showMessage(
+      error.code === "23505"
+        ? "This M-PESA transaction code has already been submitted."
+        : error.message,
+      "error"
+    );
+
+  } finally {
+    button.disabled = false;
+    button.textContent = "SUBMIT PAYMENT";
+  }
+});
+
+checkLogin();
+</script>
+
+</body>
+  </html>
+  
