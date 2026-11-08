@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,442 +5,183 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#071b17">
 <title>EQUI EARN-AFRICA | Work • Earn • Grow</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 *{box-sizing:border-box}
-
-body{
-  margin:0;
-  background:#071b17;
-  color:#f5f7f5;
-  font-family:Arial,sans-serif;
-}
-
-header{
-  padding:20px 6%;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  border-bottom:1px solid #244039;
-}
-
-.brand{
-  font-size:21px;
-  font-weight:800;
-  color:#35d39a;
-}
-
+body{margin:0;background:#071b17;color:#f5f7f5;font-family:Arial,sans-serif}
+header{padding:18px 6%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #244039}
+.brand{font-size:21px;font-weight:800;color:#35d39a}
 .brand span{color:white}
-
-button{
-  border:0;
-  border-radius:9px;
-  padding:12px 18px;
-  background:#35d39a;
-  color:#06251b;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-button.secondary{
-  background:#203d34;
-  color:white;
-}
-
-button.danger{
-  background:#8b3030;
-  color:white;
-}
-
-button:disabled{
-  opacity:.5;
-  cursor:not-allowed;
-}
-
-main{
-  max-width:1050px;
-  margin:auto;
-  padding:35px 20px;
-}
-
-.hero{
-  padding:35px 10px;
-  text-align:center;
-}
-
-.hero h1{
-  font-size:clamp(32px,7vw,55px);
-  margin:10px 0;
-}
-
+button{border:0;border-radius:9px;padding:12px 18px;background:#35d39a;color:#06251b;font-weight:bold;cursor:pointer}
+button.secondary{background:#203d34;color:white}
+button.danger{background:#8b3030;color:white}
+button:disabled{opacity:.5;cursor:not-allowed}
+main{max-width:1050px;margin:auto;padding:25px 20px}
+.hero{padding:30px 10px;text-align:center}
+.hero h1{font-size:clamp(32px,7vw,55px);margin:10px 0}
 .hero h1 span{color:#35d39a}
-
-.muted{
-  color:#a8bbb3;
-  line-height:1.6;
-}
-
-.panel{
-  background:#102a23;
-  border:1px solid #24483d;
-  border-radius:15px;
-  padding:22px;
-  margin:18px 0;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:15px;
-}
-
-input{
-  width:100%;
-  padding:14px;
-  margin:8px 0 15px;
-  background:#071b17;
-  border:1px solid #36564b;
-  border-radius:8px;
-  color:white;
-}
-
-label{
-  font-size:14px;
-  color:#c4d5cd;
-}
-
+.muted{color:#a8bbb3;line-height:1.6}
+.panel{background:#102a23;border:1px solid #24483d;border-radius:15px;padding:22px;margin:18px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
+input{width:100%;padding:14px;margin:8px 0 15px;background:#071b17;border:1px solid #36564b;border-radius:8px;color:white}
+label{font-size:14px;color:#c4d5cd}
 .hidden{display:none!important}
-
-.status{
-  display:inline-block;
-  background:#24483d;
-  color:#75e8b9;
-  padding:7px 12px;
-  border-radius:20px;
-  font-size:12px;
-}
-
-.task{
-  border:1px solid #36564b;
-  padding:16px;
-  border-radius:12px;
-  margin:12px 0;
-}
-
+.status{display:inline-block;background:#24483d;color:#75e8b9;padding:7px 12px;border-radius:20px;font-size:12px}
+.task,.payment-item{border:1px solid #36564b;padding:16px;border-radius:12px;margin:12px 0;overflow-wrap:anywhere}
 .task h3{margin-top:0}
-
-footer{
-  text-align:center;
-  padding:30px;
-  color:#8ca49a;
-  font-size:13px;
-}
-
-#message{
-  padding:12px;
-  border-radius:8px;
-  margin:12px 0;
-  display:none;
-}
-
-.error{
-  background:#572b2b;
-  color:#ffdada;
-}
-
-.success{
-  background:#174b38;
-  color:#baffd9;
-}
-
-.payment-item{
-  border:1px solid #36564b;
-  padding:15px;
-  border-radius:10px;
-  margin:12px 0;
-  overflow-wrap:anywhere;
-}
-
-.actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:12px;
-}
-
-.small{
-  font-size:12px;
-  color:#a8bbb3;
-}
-
-.activate-link{
-  display:block;
-  width:100%;
-  max-width:380px;
-  margin:25px auto;
-  padding:19px 15px;
-  text-align:center;
-  background:linear-gradient(135deg,#f5d76e,#d4af37,#b8860b);
-  color:#071b17;
-  font-size:19px;
-  font-weight:900;
-  letter-spacing:1px;
-  text-transform:uppercase;
-  text-decoration:none;
-  border-radius:12px;
-  border:2px solid #ffe69a;
-  box-shadow:0 5px 20px rgba(212,175,55,.25);
-}
-
-.activate-link:hover{
-  background:#ffe69a;
-  transform:scale(1.02);
-}
-
-.payment-value{
-  color:#35d39a;
-  font-weight:900;
-}
-
+footer{text-align:center;padding:30px;color:#8ca49a;font-size:13px}
+#message{padding:12px;border-radius:8px;margin:12px 0;display:none}
+.error{background:#572b2b;color:#ffdada}
+.success{background:#174b38;color:#baffd9}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.small{font-size:12px;color:#a8bbb3}
+.payment-box{background:#091e18;border:1px solid #b8860b;border-radius:13px;padding:20px;margin:18px 0}
+.payment-heading{color:#f5d76e;font-weight:900;letter-spacing:1px}
+.payment-value{color:#35d39a;font-weight:900}
+.payment-number{font-size:clamp(25px,6vw,36px);letter-spacing:1px}
+.pay-button{display:block;width:100%;max-width:400px;margin:22px auto;padding:18px 12px;text-align:center;background:linear-gradient(135deg,#f5d76e,#d4af37,#b8860b);color:#071b17;font-size:17px;font-weight:900;text-decoration:none;border-radius:12px;border:2px solid #ffe69a}
+.notice{padding:13px;border-radius:9px;background:#203d34;color:#f5d76e;margin:15px 0}
 </style>
 </head>
 
 <body>
-
 <header>
   <div class="brand">EQUI_<span>EARN</span>-AFRICA</div>
-  <button class="secondary" id="logoutBtn"
-    onclick="logout()" hidden>Log out</button>
+  <button class="secondary" id="logoutBtn" onclick="logout()" hidden>Log out</button>
 </header>
 
 <main>
-
 <section class="hero">
   <p class="status">WORK • EARN • GROW</p>
   <h1>Build Skills. <span>Earn.</span> Grow.</h1>
-  <p class="muted">
-    A platform connecting people to legitimate digital
-    tasks and opportunities.
-  </p>
+  <p class="muted">A platform connecting people to legitimate digital tasks and opportunities.</p>
 </section>
 
 <div id="message"></div>
 
 <!-- REGISTRATION AND LOGIN -->
-
 <section id="authSection" class="panel">
-
   <h2 id="authTitle">Create your account</h2>
-
-  <p class="muted">
-    Register for free to explore the platform.
-  </p>
+  <p class="muted">Register for free to explore the platform.</p>
 
   <div id="nameField">
-
     <label>Full name</label>
-    <input id="fullName" type="text"
-      autocomplete="name"
-      placeholder="Enter your full name">
+    <input id="fullName" type="text" autocomplete="name" placeholder="Enter your full name">
 
     <label>Phone number (M-Pesa)</label>
-    <input id="phone" type="tel"
-      autocomplete="tel"
-      placeholder="07XXXXXXXX or 01XXXXXXXX">
-
-    <p class="small">
-      Use a Kenyan mobile number registered with M-Pesa.
-    </p>
-
+    <input id="phone" type="tel" autocomplete="tel" placeholder="07XXXXXXXX or 01XXXXXXXX">
+    <p class="small">Use a Kenyan mobile number registered with M-Pesa.</p>
   </div>
 
   <label>Email address</label>
-  <input id="email" type="email"
-    autocomplete="email"
-    placeholder="you@example.com">
+  <input id="email" type="email" autocomplete="email" placeholder="you@example.com">
 
   <label>Password</label>
-  <input id="password" type="password"
-    autocomplete="new-password"
-    placeholder="At least 8 characters">
+  <input id="password" type="password" autocomplete="new-password" placeholder="At least 8 characters">
 
-  <button id="authBtn" onclick="authenticate()">
-    Create account
-  </button>
+  <button id="authBtn" onclick="authenticate()">Create account</button>
 
   <p class="muted" id="switchText">
     Already registered?
-    <a href="#" onclick="toggleAuth();return false"
-      style="color:#35d39a">Log in</a>
+    <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Log in</a>
   </p>
-
 </section>
 
 <!-- MEMBER DASHBOARD -->
-
 <section id="dashboard" class="hidden">
 
   <div class="panel">
-
     <p class="muted">WELCOME</p>
-
     <h2 id="memberName">Member</h2>
-
-    <p>
-      Account status:
-      <span class="status" id="accountStatus">
-        Registered
-      </span>
-    </p>
-
+    <p>Account status: <span class="status" id="accountStatus">registered</span></p>
     <p class="muted">Your account dashboard.</p>
-
   </div>
 
-  <!-- WALLET OVERVIEW -->
-
+  <!-- WALLETS -->
   <div class="grid">
-
     <div class="panel">
       <h3>Task wallet</h3>
       <h2 id="taskBalance">KSh 0.00</h2>
-      <p class="muted">
-        Pending:
-        <span id="taskPending">KSh 0.00</span>
-      </p>
+      <p class="muted">Pending: <span id="taskPending">KSh 0.00</span></p>
     </div>
 
     <div class="panel">
       <h3>Referral wallet</h3>
       <h2 id="referralBalance">KSh 0.00</h2>
-      <p class="muted">
-        Pending:
-        <span id="referralPending">KSh 0.00</span>
-      </p>
+      <p class="muted">Pending: <span id="referralPending">KSh 0.00</span></p>
     </div>
-
   </div>
 
-  <!-- MEMBER ACTIVATION AND PAYMENT DETAILS -->
-
+  <!-- ACTIVATION PAYMENT DETAILS -->
   <section id="activationPanel" class="panel hidden">
+    <h2>Account Activation</h2>
+    <p class="muted">Complete your one-time activation payment to unlock access to member opportunities.</p>
 
-    <h2>Activate Your Account</h2>
+    <div id="paymentStatusNotice" class="notice hidden"></div>
 
-    <p class="muted">
-      Complete your one-time activation payment
-      to unlock access to daily tasks.
-    </p>
+    <div class="payment-box">
+      <h3 class="payment-heading">M-PESA PAYMENT DETAILS</h3>
 
-    <div class="payment-item">
+      <p>Payment method: <strong class="payment-value">M-PESA PAYBILL</strong></p>
 
-      <h3 class="payment-value">
-        M-PESA PAYMENT DETAILS
-      </h3>
+      <p>PayBill Number:</p>
+      <div class="payment-value payment-number">247247</div>
 
-      <p>
-        Payment Method:
-        <strong class="payment-value">M-PESA PAYBILL</strong>
-      </p>
+      <p>Account Number:</p>
+      <div class="payment-value payment-number">0230187637829</div>
 
-      <p>
-        PayBill Number:
-        <strong class="payment-value">247247</strong>
-      </p>
-
-      <p>
-        Account Number:
-        <strong class="payment-value">0230187637829</strong>
-      </p>
-
-      <p>
-        Activation Fee:
-        <strong class="payment-value">KSh 350</strong>
-      </p>
-
+      <p>Activation Fee:</p>
+      <div class="payment-value payment-number">KSh 350</div>
     </div>
 
     <h3>PAYMENT INSTRUCTIONS</h3>
-
     <ol class="muted" style="line-height:2">
-
       <li>Open M-PESA on your phone.</li>
       <li>Select Lipa na M-PESA.</li>
       <li>Select Pay Bill.</li>
-      <li>Enter PayBill number 247247.</li>
-      <li>Enter account number 0230187637829.</li>
-      <li>Enter KSh 350.</li>
+      <li>Enter PayBill number <strong>247247</strong>.</li>
+      <li>Enter account number <strong>0230187637829</strong>.</li>
+      <li>Enter amount <strong>KSh 350</strong>.</li>
       <li>Confirm and complete payment.</li>
       <li>Keep your M-PESA confirmation message.</li>
-
     </ol>
 
-    <a href="payment.html" class="activate-link">
-      SUBMIT PAYMENT CODE
-    </a>
+    <a href="payment.html" class="pay-button">SUBMIT M-PESA PAYMENT CODE</a>
 
     <p class="small" style="text-align:center">
-      Your account will only be activated after
-      administrator verification.
+      Your account will be activated only after administrator verification.
     </p>
+  </section>
 
+  <!-- ACTIVATED ACCOUNT MESSAGE -->
+  <section id="activePanel" class="panel hidden">
+    <h2 style="color:#35d39a">Account Activated</h2>
+    <p>Your account is active. You can now access published opportunities.</p>
   </section>
 
   <!-- ADMIN PAYMENT MANAGEMENT -->
-
   <section id="adminPanel" class="panel hidden">
-
     <h2>Admin payment management</h2>
-
-    <p class="muted">
-      Review submitted activation payments.
-      Verify each transaction in your M-PESA records
-      before making a decision.
-    </p>
-
-    <button class="secondary"
-      onclick="loadAdminPayments()">
-      Refresh payments
-    </button>
-
-    <div id="adminPaymentList">
-      Loading payment requests...
-    </div>
-
+    <p class="muted">Verify each transaction in your M-PESA records before approving or rejecting it.</p>
+    <button class="secondary" onclick="loadAdminPayments()">Refresh payments</button>
+    <div id="adminPaymentList">Loading payment requests...</div>
   </section>
 
-  <!-- DAILY TASKS -->
-
-  <div class="panel">
-
+  <!-- TASKS -->
+  <section class="panel">
     <h2>Available tasks</h2>
-
-    <p class="muted">
-      Browse published opportunities below.
-    </p>
-
-    <div id="taskList">
-      Loading tasks...
-    </div>
-
-  </div>
+    <p class="muted">Browse published opportunities below.</p>
+    <div id="taskList">Loading tasks...</div>
+  </section>
 
   <!-- REFERRALS -->
-
-  <div class="panel">
-
+  <section class="panel">
     <h2>Referral programme</h2>
-
-    <p class="muted" id="referralInfo">
-      Referral access is available to activated members only.
-    </p>
-
-  </div>
+    <p class="muted" id="referralInfo">Referral access is reserved for activated members.</p>
+  </section>
 
 </section>
-
 </main>
 
 <footer>
@@ -450,47 +190,36 @@ footer{
 </footer>
 
 <script>
-
 // SUPABASE CONFIGURATION
+const SUPABASE_URL = "https://bzmkvybtvajwcixsvkja.supabase.co";
+const SUPABASE_KEY = "sb_publishable_TMstsd1FC45CiyD7zRq7pQ_yH5GpbNV";
 
-const SUPABASE_URL =
-  "https://bzmkvybtvajwcixsvkja.supabase.co";
-
-const SUPABASE_KEY =
-  "sb_publishable_TMstsd1FC45CiyD7zRq7pQ_yH5GpbNV";
-
-const db = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let isLogin = false;
 let currentUser = null;
 let currentProfile = null;
-
+let loadingDashboard = false;
 
 // MESSAGE DISPLAY
-
-function showMessage(message, type="success") {
-
+function showMessage(message, type = "success") {
   const box = document.getElementById("message");
-
   box.textContent = message;
   box.className = type;
   box.style.display = "block";
-
 }
 
+// CURRENCY FORMAT
+function money(amount) {
+  return "KSh " + Number(amount || 0).toFixed(2);
+}
 
-// KENYAN PHONE NUMBER VALIDATION
-
+// PHONE VALIDATION
 function normalizeKenyanPhone(value) {
-
   let phone = value.replace(/[\s()+-]/g, "");
 
   if (phone.startsWith("0") && phone.length === 10) {
     phone = "254" + phone.substring(1);
-
   } else if (
     (phone.startsWith("7") || phone.startsWith("1")) &&
     phone.length === 9
@@ -498,19 +227,12 @@ function normalizeKenyanPhone(value) {
     phone = "254" + phone;
   }
 
-  if (!/^254[17]\d{8}$/.test(phone)) {
-    return null;
-  }
-
+  if (!/^254[17]\d{8}$/.test(phone)) return null;
   return phone;
-
 }
 
-
-// SWITCH LOGIN AND REGISTRATION
-
+// SWITCH LOGIN / REGISTRATION
 function toggleAuth() {
-
   isLogin = !isLogin;
 
   document.getElementById("authTitle").textContent =
@@ -519,640 +241,413 @@ function toggleAuth() {
   document.getElementById("authBtn").textContent =
     isLogin ? "Log in" : "Create account";
 
-  document.getElementById("nameField")
-    .classList.toggle("hidden", isLogin);
+  document.getElementById("nameField").classList.toggle("hidden", isLogin);
 
-  document.getElementById("switchText").innerHTML =
-    isLogin
-      ? 'New here? <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Create account</a>'
-      : 'Already registered? <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Log in</a>';
+  document.getElementById("switchText").innerHTML = isLogin
+    ? 'New here? <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Create account</a>'
+    : 'Already registered? <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Log in</a>';
 
   document.getElementById("password").autocomplete =
     isLogin ? "current-password" : "new-password";
-
 }
 
-
-// AUTHENTICATION
-
+// REGISTER / LOGIN
 async function authenticate() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const fullName = document.getElementById("fullName").value.trim();
+  const rawPhone = document.getElementById("phone").value.trim();
+  const btn = document.getElementById("authBtn");
 
-  const email =
-    document.getElementById("email").value.trim();
-
-  const password =
-    document.getElementById("password").value;
-
-  const fullName =
-    document.getElementById("fullName").value.trim();
-
-  const rawPhone =
-    document.getElementById("phone").value.trim();
-
-  const btn =
-    document.getElementById("authBtn");
-
-  if (
-    !email ||
-    !password ||
-    (!isLogin && (!fullName || !rawPhone))
-  ) {
-
-    return showMessage(
-      "Please complete all required fields, including your phone number.",
-      "error"
-    );
-
+  if (!email || !password || (!isLogin && (!fullName || !rawPhone))) {
+    return showMessage("Please complete all required fields.", "error");
   }
 
   if (password.length < 8) {
-
-    return showMessage(
-      "Password must have at least 8 characters.",
-      "error"
-    );
-
+    return showMessage("Password must have at least 8 characters.", "error");
   }
 
   let normalizedPhone = null;
 
   if (!isLogin) {
-
     normalizedPhone = normalizeKenyanPhone(rawPhone);
-
     if (!normalizedPhone) {
-
-      return showMessage(
-        "Enter a valid Kenyan mobile number, for example 0712345678 or 0112345678.",
-        "error"
-      );
-
+      return showMessage("Enter a valid Kenyan mobile number, for example 0712345678.", "error");
     }
-
   }
 
   btn.disabled = true;
   btn.textContent = "Please wait...";
 
   try {
-
     let result;
 
     if (isLogin) {
-
-      result = await db.auth.signInWithPassword({
-        email,
-        password
-      });
-
+      result = await db.auth.signInWithPassword({ email, password });
     } else {
-
       result = await db.auth.signUp({
-
         email,
         password,
-
         options: {
           data: {
             full_name: fullName,
             phone: normalizedPhone
           }
         }
-
       });
-
     }
 
     if (result.error) throw result.error;
 
     if (!isLogin && !result.data.session) {
-
-      showMessage(
-        "Registration received! Check your email to confirm your account before logging in."
-      );
-
+      showMessage("Registration received! Check your email to confirm your account before logging in.");
       toggleAuth();
-
     } else {
-
-      showMessage(
-        isLogin ? "Login successful!" : "Account created!"
-      );
-
+      showMessage(isLogin ? "Login successful!" : "Account created!");
       await loadDashboard();
-
     }
-
   } catch (error) {
-
-    showMessage(
-      error.message || "Something went wrong.",
-      "error"
-    );
-
+    showMessage(error.message || "Something went wrong.", "error");
   } finally {
-
     btn.disabled = false;
     btn.textContent = isLogin ? "Log in" : "Create account";
-
   }
-
 }
 
-
-// DASHBOARD
-
+// LOAD DASHBOARD
 async function loadDashboard() {
+  if (loadingDashboard) return;
+  loadingDashboard = true;
 
-  const {
-    data: {user},
-    error: userError
-  } = await db.auth.getUser();
+  try {
+    const { data: { user }, error: userError } = await db.auth.getUser();
 
-  if (userError || !user) return;
-
-  currentUser = user;
-
-  document.getElementById("authSection")
-    .classList.add("hidden");
-
-  document.getElementById("dashboard")
-    .classList.remove("hidden");
-
-  document.getElementById("logoutBtn").hidden = false;
-
-
-  // LOAD PROFILE
-
-  const {
-    data: profile,
-    error: profileError
-  } = await db
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
-  if (profileError) {
-
-    showMessage(
-      "Could not load your profile: " + profileError.message,
-      "error"
-    );
-
-    return;
-
-  }
-
-  const savedPhone = user.user_metadata?.phone;
-
-  if (!profile.phone && savedPhone) {
-
-    const {error: phoneError} = await db
-      .from("profiles")
-      .update({phone: savedPhone})
-      .eq("id", user.id);
-
-    if (phoneError) {
-
-      console.error(
-        "Phone number sync failed:",
-        phoneError.message
-      );
-
-    } else {
-
-      profile.phone = savedPhone;
-
+    if (userError || !user) {
+      document.getElementById("dashboard").classList.add("hidden");
+      document.getElementById("authSection").classList.remove("hidden");
+      document.getElementById("logoutBtn").hidden = true;
+      return;
     }
 
-  }
+    currentUser = user;
 
-  currentProfile = profile;
+    const { data: profile, error: profileError } = await db
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
 
-  document.getElementById("memberName").textContent =
-    profile.full_name ||
-    user.user_metadata?.full_name ||
-    "Member";
+    if (profileError) {
+      showMessage("Could not load your profile: " + profileError.message, "error");
+      return;
+    }
 
-  document.getElementById("accountStatus").textContent =
-    profile.account_status || "registered";
+    currentProfile = profile;
 
+    // Keep the saved registration phone number in the profile.
+    const savedPhone = user.user_metadata?.phone;
 
-  // ACCOUNT ACCESS
+    if (!profile.phone && savedPhone) {
+      const { error: phoneError } = await db
+        .from("profiles")
+        .update({ phone: savedPhone })
+        .eq("id", user.id);
 
-  const isAdmin = profile.role === "admin";
+      if (!phoneError) profile.phone = savedPhone;
+    }
 
-  const isActive = profile.account_status === "active";
+    document.getElementById("authSection").classList.add("hidden");
+    document.getElementById("dashboard").classList.remove("hidden");
+    document.getElementById("logoutBtn").hidden = false;
 
-  document.getElementById("activationPanel")
-    .classList.toggle(
-      "hidden",
-      isAdmin || isActive
-    );
+    document.getElementById("memberName").textContent =
+      profile.full_name || user.user_metadata?.full_name || "Member";
 
-  document.getElementById("adminPanel")
-    .classList.toggle(
-      "hidden",
-      !isAdmin
-    );
+    const accountStatus = String(profile.account_status || "registered").toLowerCase();
 
+    document.getElementById("accountStatus").textContent = accountStatus;
 
-  // LOAD WALLETS
+    const isAdmin = profile.role === "admin";
+    const isActive = accountStatus === "active";
 
-  const {
-    data: wallets,
-    error: walletError
-  } = await db
-    .from("wallets")
-    .select("*")
-    .eq("user_id", user.id);
+    // IMPORTANT:
+    // Every non-admin member sees payment details until account activation.
+    // Pending payment does not hide the payment details.
+    document.getElementById("activationPanel")
+      .classList.toggle("hidden", isAdmin || isActive);
 
-  if (walletError) {
+    document.getElementById("activePanel")
+      .classList.toggle("hidden", !isActive);
 
-    console.error(
-      "Wallet loading error:",
-      walletError.message
-    );
+    document.getElementById("adminPanel")
+      .classList.toggle("hidden", !isAdmin);
 
-  } else if (wallets) {
+    // Check whether this member has already submitted a payment.
+    await loadMyPaymentStatus();
 
-    // IMPORTANT: Exact wallet types from your database
+    // LOAD WALLETS
+    const { data: wallets, error: walletError } = await db
+      .from("wallets")
+      .select("*")
+      .eq("user_id", user.id);
 
-    const task = wallets.find(
-      w => w.wallet_type === "tasks"
-    );
-
-    const referral = wallets.find(
-      w => w.wallet_type === "referrals"
-    );
-
-    if (task) {
+    if (walletError) {
+      console.error("Wallet loading error:", walletError.message);
+    } else {
+      const task = (wallets || []).find(w => w.wallet_type === "tasks");
+      const referral = (wallets || []).find(w => w.wallet_type === "referrals");
 
       document.getElementById("taskBalance").textContent =
-        money(task.available_balance);
+        money(task?.available_balance);
 
       document.getElementById("taskPending").textContent =
-        money(task.pending_balance);
-
-    }
-
-    if (referral) {
+        money(task?.pending_balance);
 
       document.getElementById("referralBalance").textContent =
-        money(referral.available_balance);
+        money(referral?.available_balance);
 
       document.getElementById("referralPending").textContent =
-        money(referral.pending_balance);
-
+        money(referral?.pending_balance);
     }
 
-  }
-
-
-  // REFERRAL INFORMATION
-
-  document.getElementById("referralInfo").textContent =
-
-    isActive
-      ? "Your referral code: " +
-        (profile.referral_code || "Not assigned") +
-        ". Referral rewards and withdrawals are not yet enabled."
+    // REFERRAL INFORMATION
+    document.getElementById("referralInfo").textContent = isActive
+      ? "Your referral code: " + (profile.referral_code || "Not assigned") +
+        ". Referral rewards and withdrawals are subject to platform rules."
       : "Referral access is reserved for activated members.";
 
+    // ADMIN PAYMENTS
+    if (isAdmin) await loadAdminPayments();
 
-  // ADMIN PAYMENTS
+    // TASKS
+    await loadTasks();
 
-  if (isAdmin) {
-    await loadAdminPayments();
+  } catch (error) {
+    showMessage("Dashboard error: " + error.message, "error");
+  } finally {
+    loadingDashboard = false;
   }
-
-
-  // TASKS
-
-  await loadTasks();
-
 }
 
+// MEMBER PAYMENT STATUS
+async function loadMyPaymentStatus() {
+  const notice = document.getElementById("paymentStatusNotice");
+  notice.classList.add("hidden");
+  notice.textContent = "";
 
-// CURRENCY FORMAT
+  if (!currentUser) return;
 
-function money(amount) {
-
-  return "KSh " + Number(amount || 0).toFixed(2);
-
-}
-
-
-// ADMIN PAYMENT MANAGEMENT
-
-async function loadAdminPayments() {
-
-  const list =
-    document.getElementById("adminPaymentList");
-
-  list.textContent = "Loading payment requests...";
-
-  const {
-    data: payments,
-    error
-  } = await db
+  const { data, error } = await db
     .from("activation_payments")
-    .select("*")
-    .order("created_at", {ascending:false});
+    .select("status,created_at")
+    .eq("user_id", currentUser.id)
+    .order("created_at", { ascending: false })
+    .limit(1);
 
   if (error) {
-
-    list.textContent =
-      "Could not load payments: " + error.message;
-
+    console.error("Payment status check:", error.message);
     return;
+  }
 
+  if (data && data.length > 0) {
+    const status = String(data[0].status || "").toLowerCase();
+
+    if (status === "pending") {
+      notice.textContent =
+        "Your payment code has been submitted and is waiting for administrator verification. Keep your M-PESA confirmation message.";
+      notice.classList.remove("hidden");
+    } else if (status === "rejected") {
+      notice.textContent =
+        "Your previous payment submission was rejected. Please contact the administrator before submitting another payment.";
+      notice.classList.remove("hidden");
+    }
+  }
+}
+
+// ADMIN: LOAD PAYMENT REQUESTS
+async function loadAdminPayments() {
+  const list = document.getElementById("adminPaymentList");
+  list.textContent = "Loading payment requests...";
+
+  const { data: payments, error } = await db
+    .from("activation_payments")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    list.textContent = "Could not load payments: " + error.message;
+    return;
   }
 
   if (!payments || payments.length === 0) {
-
-    list.textContent =
-      "No payment requests submitted yet.";
-
+    list.textContent = "No payment requests submitted yet.";
     return;
-
   }
 
-  const userIds = [
-    ...new Set(payments.map(p => p.user_id))
-  ];
+  const userIds = [...new Set(payments.map(p => p.user_id))];
 
-  const {
-    data: profiles,
-    error: profileError
-  } = await db
+  const { data: profiles, error: profileError } = await db
     .from("profiles")
     .select("id,full_name,phone")
     .in("id", userIds);
 
   if (profileError) {
-
-    list.textContent =
-      "Could not load member details: " +
-      profileError.message;
-
+    list.textContent = "Could not load member details: " + profileError.message;
     return;
-
   }
 
-  const profileMap = new Map(
-    (profiles || []).map(p => [p.id, p])
-  );
-
+  const profileMap = new Map((profiles || []).map(p => [p.id, p]));
   list.innerHTML = "";
 
   payments.forEach(payment => {
-
-    const member =
-      profileMap.get(payment.user_id);
-
-    const item =
-      document.createElement("div");
-
+    const member = profileMap.get(payment.user_id);
+    const item = document.createElement("div");
     item.className = "payment-item";
 
-    const heading =
-      document.createElement("h3");
+    const heading = document.createElement("h3");
+    heading.textContent = member?.full_name || "Member";
 
-    heading.textContent =
-      member?.full_name || "Member";
+    const phone = document.createElement("p");
+    phone.textContent = "M-Pesa phone: " + (member?.phone || "Not provided");
 
-    const phone =
-      document.createElement("p");
+    const code = document.createElement("p");
+    code.textContent = "M-Pesa code: " + payment.mpesa_code;
 
-    phone.textContent =
-      "M-Pesa phone: " +
-      (member?.phone || "Not provided");
+    const amount = document.createElement("p");
+    amount.textContent = "Amount: " + money(payment.amount);
 
-    const code =
-      document.createElement("p");
+    const status = document.createElement("p");
+    status.textContent = "Status: " + String(payment.status).toUpperCase();
 
-    code.textContent =
-      "M-Pesa code: " + payment.mpesa_code;
+    const date = document.createElement("p");
+    date.textContent = "Submitted: " + new Date(payment.created_at).toLocaleString();
 
-    const amount =
-      document.createElement("p");
-
-    amount.textContent =
-      "Amount: " + money(payment.amount);
-
-    const status =
-      document.createElement("p");
-
-    status.textContent =
-      "Status: " + payment.status.toUpperCase();
-
-    const date =
-      document.createElement("p");
-
-    date.textContent =
-      "Submitted: " +
-      new Date(payment.created_at).toLocaleString();
-
-    item.append(
-      heading,
-      phone,
-      code,
-      amount,
-      status,
-      date
-    );
+    item.append(heading, phone, code, amount, status, date);
 
     if (payment.status === "pending") {
-
-      const actions =
-        document.createElement("div");
-
+      const actions = document.createElement("div");
       actions.className = "actions";
 
-      const approve =
-        document.createElement("button");
-
+      const approve = document.createElement("button");
       approve.textContent = "Approve payment";
+      approve.onclick = () => reviewPayment(payment.id, "approved");
 
-      approve.onclick = () =>
-        reviewPayment(payment.id, "approved");
-
-      const reject =
-        document.createElement("button");
-
+      const reject = document.createElement("button");
       reject.textContent = "Reject payment";
-
       reject.className = "danger";
-
-      reject.onclick = () =>
-        reviewPayment(payment.id, "rejected");
+      reject.onclick = () => reviewPayment(payment.id, "rejected");
 
       actions.append(approve, reject);
-
       item.appendChild(actions);
-
     }
 
     list.appendChild(item);
-
   });
-
 }
 
-
-// ADMIN PAYMENT APPROVAL
-
+// ADMIN: APPROVE OR REJECT PAYMENT
 async function reviewPayment(paymentId, decision) {
-
   const confirmed = confirm(
-    "Have you verified this payment in your M-Pesa records? " +
-    "Proceed to " + decision + " it?"
+    "Have you verified this payment in your M-PESA records? Proceed to " +
+    decision + " it?"
   );
 
   if (!confirmed) return;
 
   try {
-
-    const {error} = await db.rpc(
-      "review_activation_payment",
-      {
-        p_payment_id: paymentId,
-        p_decision: decision
-      }
-    );
+    const { error } = await db.rpc("review_activation_payment", {
+      p_payment_id: paymentId,
+      p_decision: decision
+    });
 
     if (error) throw error;
 
-    showMessage(
-      "Payment successfully " + decision + "."
-    );
-
+    showMessage("Payment successfully " + decision + ".");
     await loadAdminPayments();
-
   } catch (error) {
-
-    showMessage(
-      "Review failed: " + error.message,
-      "error"
-    );
-
+    showMessage("Review failed: " + error.message, "error");
   }
-
 }
 
-
 // LOAD PUBLISHED TASKS
-
 async function loadTasks() {
+  const list = document.getElementById("taskList");
+  list.textContent = "Loading tasks...";
 
-  const list =
-    document.getElementById("taskList");
-
-  const {data, error} = await db
+  const { data, error } = await db
     .from("tasks")
     .select("id,title,description,payout,deadline")
     .eq("status", "published")
-    .order("created_at", {ascending:false});
+    .order("created_at", { ascending: false });
 
   if (error) {
-
-    list.textContent =
-      "Unable to load tasks: " + error.message;
-
+    list.textContent = "Unable to load tasks: " + error.message;
     return;
-
   }
 
   if (!data || data.length === 0) {
-
-    list.textContent =
-      "No published tasks yet. Please check again later.";
-
+    list.textContent = "No published tasks yet. Please check again later.";
     return;
-
   }
 
   list.innerHTML = "";
 
   data.forEach(task => {
-
-    const item =
-      document.createElement("div");
-
+    const item = document.createElement("div");
     item.className = "task";
 
-    const title =
-      document.createElement("h3");
-
+    const title = document.createElement("h3");
     title.textContent = task.title;
 
-    const description =
-      document.createElement("p");
+    const description = document.createElement("p");
+    description.textContent = task.description || "";
 
-    description.textContent =
-      task.description;
+    const payout = document.createElement("strong");
+    payout.textContent = "Payout: " + money(task.payout);
 
-    const payout =
-      document.createElement("strong");
+    const deadline = document.createElement("p");
+     deadline.className = "small";
+    deadline.textContent = "Deadline: " + (task.deadline || "Not specified");
 
-    payout.textContent =
-      "Payout: " + money(task.payout);
-
-    const deadline =
-      document.createElement("p");
-
-    deadline.className = "small";
-
-    deadline.textContent =
-      "Deadline: " +
-      (task.deadline || "Not specified");
-
-    item.append(
-      title,
-      description,
-      payout,
-      deadline
-    );
-
+    item.append(title, description, payout, deadline);
     list.appendChild(item);
-
   });
-
 }
-
 
 // LOGOUT
-
 async function logout() {
-
   await db.auth.signOut();
-
+  currentUser = null;
+  currentProfile = null;
   location.reload();
-
 }
 
-
-// AUTH SESSION LISTENER
-
+// SESSION LISTENER
 db.auth.onAuthStateChange((event, session) => {
-
-  if (session) {
-
+  if (session && event === "SIGNED_IN") {
     setTimeout(() => loadDashboard(), 0);
-
   }
 
+  if (event === "SIGNED_OUT") {
+    document.getElementById("dashboard").classList.add("hidden");
+    document.getElementById("authSection").classList.remove("hidden");
+    document.getElementById("logoutBtn").hidden = true;
+  }
 });
 
-
 // CHECK EXISTING SESSION
-
 (async function start() {
+  const { data: { session }, error } = await db.auth.getSession();
 
-  const {
-    data: {session}
-  } = await db.auth.getSession();
+  if (error) {
+    showMessage("Could not check login session: " + error.message, "error");
+    return;
+  }
 
-  if (ses
+  if (session) {
+    await loadDashboard();
+  }
+})();
+</script>
+</body>
+</html>
