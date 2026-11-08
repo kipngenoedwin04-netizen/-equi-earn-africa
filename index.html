@@ -21,6 +21,7 @@ button{background:#e5bd43;color:#172014;border:0;border-radius:8px;padding:11px 
 button:disabled{opacity:.5;cursor:not-allowed}
 button.alt{background:#31533e;color:white}
 button.red{background:#8c3030;color:white}
+button.locked{background:#46533a;color:#fff}
 nav{display:flex;gap:6px;flex-wrap:wrap;margin:15px 0}
 nav button{background:#203d2b;color:white}
 nav button.active{background:#e5bd43;color:#172014}
@@ -29,6 +30,7 @@ nav button.active{background:#e5bd43;color:#172014}
 .stat{font-size:25px;color:#f3cb51;font-weight:bold}
 .muted{color:#b5c5b8;font-size:13px}
 .task{padding:15px;margin:12px 0;background:#091d12;border:1px solid #36563e;border-radius:10px}
+.task.locked-task{border:1px solid #8a702b;background:#171d12}
 .pill{padding:5px 9px;border-radius:20px;background:#46533a;font-size:12px}
 .pending{background:#65521e}
 .approved{background:#155b36}
@@ -36,6 +38,8 @@ nav button.active{background:#e5bd43;color:#172014}
 .msg{padding:10px;color:#f3cb51;white-space:pre-wrap;overflow-wrap:anywhere}
 .row{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
 .page{min-height:200px}
+.locked-label{color:#f3cb51;font-weight:bold}
+.activation-banner{padding:13px;background:#302914;border:1px solid #92752c;border-radius:9px;margin:12px 0}
 </style>
 </head>
 
@@ -104,24 +108,33 @@ nav button.active{background:#e5bd43;color:#172014}
   </div>
 
   <div id="activation" class="card">
-   <h2>Activate account</h2>
+   <h2>Activate your account</h2>
+   <p>Unlock all available tasks by activating your account.</p>
    <p>Pay KSh 350 through M-Pesa:</p>
-   <p><b>PayBill:</b> 247247<br>
-   <b>Account:</b> 0230187637829<br>
-   <b>Amount:</b> KSh 350</p>
-   <p class="muted">After paying, submit your transaction code. Admin verifies manually.</p>
+   <p>
+    <b>PayBill:</b> 247247<br>
+    <b>Account:</b> 0230187637829<br>
+    <b>Amount:</b> KSh 350
+   </p>
+   <p class="muted">After paying, submit your transaction code. Admin verifies payments manually before activation.</p>
    <input id="mpesaCode" placeholder="M-Pesa transaction code">
    <button onclick="sendPayment()">Submit payment</button>
    <div id="paymentMsg" class="msg"></div>
   </div>
 
   <div id="activeMessage" class="card hidden">
-   Your account is active. You can now access available tasks.
+   <h2>Account activated!</h2>
+   Your account is active. You can now perform available tasks.
   </div>
  </section>
 
  <section id="tasks" class="page hidden">
-  <div class="card"><h2>Available tasks</h2><div id="taskList">Loading...</div></div>
+  <div class="card">
+   <h2>Available Tasks</h2>
+   <p class="muted">Browse published tasks and their rewards below.</p>
+   <div id="taskAccessNotice"></div>
+   <div id="taskList">Loading tasks...</div>
+  </div>
  </section>
 
  <section id="work" class="page hidden">
@@ -154,8 +167,10 @@ nav button.active{background:#e5bd43;color:#172014}
   <div class="card">
    <h2 id="formHeading">Publish a task</h2>
    <input id="editId" type="hidden">
+
    <label>Task title</label>
    <input id="taskTitle" placeholder="Task title">
+
    <label>Description / instructions</label>
    <textarea id="taskDescription" placeholder="Explain what members must do"></textarea>
 
@@ -220,8 +235,7 @@ function showAuthMessage(message) {
 
 function showError(prefix, error) {
  console.error(prefix, error);
- const message = error?.message || String(error || "Unknown error");
- showAuthMessage(prefix + ": " + message);
+ showAuthMessage(prefix + ": " + (error?.message || String(error)));
 }
 
 async function loadSupabase() {
@@ -240,29 +254,22 @@ async function loadSupabase() {
   }
 
   db = library.createClient(URL, KEY);
-
   showAuthMessage("Connection ready. You can log in or create an account.");
 
   const { data, error } = await db.auth.getSession();
-
   if (error) throw error;
 
   if (data.session?.user) {
    await start(data.session.user);
   }
 
-  db.auth.onAuthStateChange((event, session) => {
-   if (event === "SIGNED_OUT") {
-    location.reload();
-   }
+  db.auth.onAuthStateChange(event => {
+   if (event === "SIGNED_OUT") location.reload();
   });
 
  } catch (error) {
   console.error("Startup error:", error);
-  showAuthMessage(
-   "The app could not connect to its login service. Check your internet connection and reload the page. Details: " +
-   (error?.message || error)
-  );
+  showAuthMessage("Could not connect to the login service. Check your internet connection and reload. Details: " + (error?.message || error));
   $("loginBtn").disabled = true;
   $("registerBtn").disabled = true;
  }
@@ -270,7 +277,7 @@ async function loadSupabase() {
 
 async function login() {
  if (!db) {
-  showAuthMessage("Login service is still connecting. Please reload the page and try again.");
+  showAuthMessage("Login service is still connecting. Please reload and try again.");
   return;
  }
 
@@ -287,15 +294,9 @@ async function login() {
  showAuthMessage("Signing in...");
 
  try {
-  const { data, error } = await db.auth.signInWithPassword({
-   email,
-   password
-  });
-
+  const { data, error } = await db.auth.signInWithPassword({ email, password });
   if (error) throw error;
-
   await start(data.user);
-
  } catch (error) {
   showError("Login failed", error);
  } finally {
@@ -328,9 +329,7 @@ async function register() {
   const { data, error } = await db.auth.signUp({
    email,
    password,
-   options: {
-    data: { full_name: name }
-   }
+   options: { data: { full_name: name } }
   });
 
   if (error) throw error;
@@ -344,14 +343,13 @@ async function register() {
    }, { onConflict: "id" });
 
    if (profileError) {
-    console.error("Profile creation error:", profileError);
     showAuthMessage("Account created, but profile setup needs attention: " + profileError.message);
     return;
    }
 
    await start(data.user);
   } else {
-   showAuthMessage("Account created. Check your email for confirmation, then return here and log in.");
+   showAuthMessage("Account created. Check your email for confirmation, then log in.");
   }
 
  } catch (error) {
@@ -375,7 +373,7 @@ async function start(u) {
   if (error) throw error;
 
   if (!p) {
-   showAuthMessage("You signed in, but your member profile was not found. Please contact the administrator.");
+   showAuthMessage("Your login succeeded, but your profile was not found. Contact the administrator.");
    return;
   }
 
@@ -414,13 +412,14 @@ function tab(name) {
 
  const page = $(name);
  if (!page) return;
-
  page.classList.remove("hidden");
 
  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+
  const clicked = [...document.querySelectorAll("nav button")].find(b =>
   b.getAttribute("onclick") === `tab('${name}')`
  );
+
  if (clicked) clicked.classList.add("active");
 
  if (name === "tasks") loadTasks();
@@ -431,6 +430,12 @@ function tab(name) {
  if (name === "review") loadSubmissions();
  if (name === "payments") loadPayments();
  if (name === "overview") loadOverview();
+}
+
+function goToActivation() {
+ tab("home");
+ const activation = $("activation");
+ if (activation) activation.scrollIntoView({ behavior:"smooth", block:"center" });
 }
 
 async function wallets() {
@@ -479,19 +484,35 @@ async function sendPayment() {
  if (!error) $("mpesaCode").value = "";
 }
 
+/* PUBLISHED TASKS ARE VISIBLE TO EVERY LOGGED-IN MEMBER.
+   ONLY ACTIVATED MEMBERS CAN SUBMIT PROOF. */
 async function loadTasks() {
  const root = $("taskList");
+ const notice = $("taskAccessNotice");
+ const isActive = profile.account_status === "active";
 
- if (profile.account_status !== "active" && !admin) {
-  root.textContent = "Activate your account to access tasks.";
-  return;
+ if (!isActive && !admin) {
+  notice.innerHTML = `
+   <div class="activation-banner">
+    <b>🔒 Tasks are currently locked for your account.</b>
+    <p class="muted">You can browse published tasks and see their rewards. Activate your account to perform daily tasks and submit proof.</p>
+    <button onclick="goToActivation()">Activate account – KSh 350</button>
+   </div>
+  `;
+ } else {
+  notice.innerHTML = `
+   <div class="activation-banner">
+    <b>✓ Your account is active.</b>
+    <p class="muted">You can perform available tasks and submit your proof for review.</p>
+   </div>
+  `;
  }
 
  const { data, error } = await db
   .from("tasks")
   .select("*")
   .eq("status", "published")
-  .order("created_at", { ascending: false });
+  .order("created_at", { ascending:false });
 
  if (error) {
   root.textContent = error.message;
@@ -499,42 +520,69 @@ async function loadTasks() {
  }
 
  if (!data?.length) {
-  root.textContent = "No published tasks yet.";
+  root.textContent = "No published tasks available at the moment. Check again later.";
   return;
  }
 
- const { data: mine, error: mineError } = await db
-  .from("task_submissions")
-  .select("task_id,status")
-  .eq("user_id", user.id);
+ let done = new Map();
 
- if (mineError) {
-  root.textContent = mineError.message;
-  return;
+ if (user) {
+  const { data: mine, error: mineError } = await db
+   .from("task_submissions")
+   .select("task_id,status")
+   .eq("user_id", user.id);
+
+  if (mineError) {
+   root.textContent = mineError.message;
+   return;
+  }
+
+  done = new Map((mine || []).map(x => [x.task_id, x.status]));
  }
 
- const done = new Map((mine || []).map(x => [x.task_id, x.status]));
+ root.innerHTML = data.map(t => {
+  const alreadySubmitted = done.has(t.id);
 
- root.innerHTML = data.map(t => `
-  <article class="task">
-   <div class="row">
-    <h3>${safe(t.title)}</h3>
-    <b>${money(t.payout)}</b>
-   </div>
-   <p>${safe(t.description)}</p>
-   <p class="muted">Deadline: ${safe(t.deadline || "Not specified")}</p>
-   ${done.has(t.id)
-    ? `Already submitted: ${pill(done.get(t.id))}`
-    : `<textarea id="proof${safe(t.id)}" placeholder="Paste proof link or describe your completed work"></textarea>
-       <button onclick="submitWork('${safe(t.id)}')">Submit proof</button>`
-   }
-  </article>
- `).join("");
+  if (!isActive && !admin) {
+   return `
+    <article class="task locked-task">
+     <div class="row">
+      <h3>${safe(t.title)}</h3>
+      <b>${money(t.payout)}</b>
+     </div>
+     <p>${safe(t.description)}</p>
+     <p class="muted">Deadline: ${safe(t.deadline || "Not specified")}</p>
+     <div class="row">
+      <span class="locked-label">🔒 LOCKED – ACTIVATE ACCOUNT</span>
+      <button class="locked" onclick="goToActivation()">Unlock task</button>
+     </div>
+    </article>
+   `;
+  }
+
+  return `
+   <article class="task">
+    <div class="row">
+     <h3>${safe(t.title)}</h3>
+     <b>${money(t.payout)}</b>
+    </div>
+    <p>${safe(t.description)}</p>
+    <p class="muted">Deadline: ${safe(t.deadline || "Not specified")}</p>
+    ${
+     alreadySubmitted
+      ? `<p>Already submitted: ${pill(done.get(t.id))}</p>`
+      : `<textarea id="proof${safe(t.id)}" placeholder="Paste proof link or describe your completed work"></textarea>
+         <button onclick="submitWork('${safe(t.id)}')">Submit proof</button>`
+    }
+   </article>
+  `;
+ }).join("");
 }
 
 async function submitWork(id) {
  if (profile.account_status !== "active") {
-  alert("Activate your account first.");
+  alert("Activate your account before submitting task proof.");
+  goToActivation();
   return;
  }
 
@@ -546,10 +594,10 @@ async function submitWork(id) {
  }
 
  const { error } = await db.from("task_submissions").insert({
-  task_id: id,
-  user_id: user.id,
+  task_id:id,
+  user_id:user.id,
   proof,
-  status: "pending"
+  status:"pending"
  });
 
  if (error) {
@@ -568,7 +616,7 @@ async function loadMyWork() {
   .from("task_submissions")
   .select("*")
   .eq("user_id", user.id)
-  .order("created_at", { ascending: false });
+  .order("created_at", { ascending:false });
 
  if (error) {
   root.textContent = error.message;
@@ -640,7 +688,7 @@ async function saveTask() {
 }
 
 function clearForm() {
- ["editId", "taskTitle", "taskDescription", "taskReward", "taskDeadline"]
+ ["editId","taskTitle","taskDescription","taskReward","taskDeadline"]
   .forEach(id => $(id).value = "");
 
  $("taskStatus").value = "draft";
@@ -653,7 +701,7 @@ async function loadAdminTasks() {
  const { data, error } = await db
   .from("tasks")
   .select("*")
-  .order("created_at", { ascending: false });
+  .order("created_at", { ascending:false });
 
  if (error) {
   root.textContent = error.message;
@@ -703,12 +751,11 @@ async function editTask(id) {
  $("taskStatus").value = data.status;
  $("formHeading").textContent = "Edit task";
 
- window.scrollTo(0, 0);
+ window.scrollTo(0,0);
 }
 
-async function changeStatus(id, status) {
- const { error } = await db.from("tasks").update({ status }).eq("id", id);
-
+async function changeStatus(id,status) {
+ const { error } = await db.from("tasks").update({status}).eq("id",id);
  if (error) alert(error.message);
  else loadAdminTasks();
 }
@@ -716,8 +763,7 @@ async function changeStatus(id, status) {
 async function deleteTask(id) {
  if (!confirm("Delete this task?")) return;
 
- const { error } = await db.from("tasks").delete().eq("id", id);
-
+ const { error } = await db.from("tasks").delete().eq("id",id);
  if (error) alert(error.message);
  else loadAdminTasks();
 }
@@ -728,13 +774,12 @@ async function loadSubmissions() {
  const { data, error } = await db
   .from("task_submissions")
   .select("*")
-  .order("created_at", { ascending: false });
+  .order("created_at", { ascending:false });
 
  if (error) {
   root.textContent = error.message;
   return;
  }
-
  if (!data?.length) {
   root.textContent = "No submissions yet.";
   return;
@@ -743,8 +788,8 @@ async function loadSubmissions() {
  const ids = [...new Set(data.map(s => s.task_id))];
  const users = [...new Set(data.map(s => s.user_id))];
 
- const tr = await db.from("tasks").select("id,title,payout").in("id", ids);
- const pr = await db.from("profiles").select("id,full_name,email").in("id", users);
+ const tr = await db.from("tasks").select("id,title,payout").in("id",ids);
+ const pr = await db.from("profiles").select("id,full_name,email").in("id",users);
 
  if (tr.error || pr.error) {
   root.textContent = tr.error?.message || pr.error?.message;
@@ -752,7 +797,6 @@ async function loadSubmissions() {
  }
 
  const tm = {}, pm = {};
-
  (tr.data || []).forEach(x => tm[x.id] = x);
  (pr.data || []).forEach(x => pm[x.id] = x);
 
@@ -767,24 +811,26 @@ async function loadSubmissions() {
    </p>
    <p>${safe(s.proof)}</p>
    <b>${money(tm[s.task_id]?.payout)}</b>
-   ${s.status === "pending"
-    ? `<textarea id="note${safe(s.id)}" placeholder="Optional admin feedback"></textarea>
-       <button onclick="review('${safe(s.id)}','approved')">Approve & credit reward</button>
-       <button class="red" onclick="review('${safe(s.id)}','rejected')">Reject</button>`
-    : `<p class="muted">Feedback: ${safe(s.admin_note || "None")}</p>`
+   ${
+    s.status === "pending"
+     ? `<textarea id="note${safe(s.id)}" placeholder="Optional admin feedback"></textarea>
+        <button onclick="review('${safe(s.id)}','approved')">Approve & credit reward</button>
+        <button class="red" onclick="review('${safe(s.id)}','rejected')">Reject</button>`
+     : `<p class="muted">Feedback: ${safe(s.admin_note || "None")}</p>`
    }
   </article>
  `).join("");
- }
- async function review(id, decision) {
+}
+
+async function review(id,decision) {
  if (!confirm(decision === "approved" ? "Approve and credit reward?" : "Reject this work?")) return;
 
  const note = $("note" + id)?.value.trim() || null;
 
  const { error } = await db.rpc("review_task_submission", {
-  p_submission_id: id,
-  p_decision: decision,
-  p_admin_note: note
+  p_submission_id:id,
+  p_decision:decision,
+  p_admin_note:note
  });
 
  if (error) {
@@ -803,13 +849,12 @@ async function loadPayments() {
  const { data, error } = await db
   .from("activation_payments")
   .select("*")
-  .order("created_at", { ascending: false });
+  .order("created_at", { ascending:false });
 
  if (error) {
   root.textContent = error.message;
   return;
  }
-
  if (!data?.length) {
   root.textContent = "No payment requests.";
   return;
@@ -820,23 +865,24 @@ async function loadPayments() {
    <h3>${safe(p.mpesa_code)}</h3>
    <p>${money(p.amount)} • ${safe(p.user_id)}</p>
    ${pill(p.status)}
-   ${p.status === "pending"
-    ? `<div>
-       <button onclick="reviewPayment('${safe(p.id)}','approved')">Approve & activate</button>
-       <button class="red" onclick="reviewPayment('${safe(p.id)}','rejected')">Reject</button>
-      </div>`
-    : ""
+   ${
+    p.status === "pending"
+     ? `<div>
+        <button onclick="reviewPayment('${safe(p.id)}','approved')">Approve & activate</button>
+        <button class="red" onclick="reviewPayment('${safe(p.id)}','rejected')">Reject</button>
+       </div>`
+     : ""
    }
   </article>
  `).join("");
 }
 
-async function reviewPayment(id, decision) {
+async function reviewPayment(id,decision) {
  if (!confirm("Confirm " + decision + " payment?")) return;
 
  const { error } = await db.rpc("review_activation_payment", {
-  p_payment_id: id,
-  p_decision: decision
+  p_payment_id:id,
+  p_decision:decision
  });
 
  if (error) {
@@ -850,9 +896,9 @@ async function reviewPayment(id, decision) {
 }
 
 async function loadOverview() {
- const a = await db.from("profiles").select("id", { count:"exact", head:true });
- const b = await db.from("task_submissions").select("id", { count:"exact", head:true }).eq("status", "pending");
- const c = await db.from("activation_payments").select("id", { count:"exact", head:true }).eq("status", "pending");
+ const a = await db.from("profiles").select("id",{count:"exact",head:true});
+ const b = await db.from("task_submissions").select("id",{count:"exact",head:true}).eq("status","pending");
+ const c = await db.from("activation_payments").select("id",{count:"exact",head:true}).eq("status","pending");
 
  $("memberCount").textContent = a.count ?? 0;
  $("pendingCount").textContent = b.count ?? 0;
@@ -874,12 +920,13 @@ function loadProfile() {
  `;
 }
 
-/* Connect the HTML buttons to the JavaScript functions */
-Object.assign(window, {
+/* Make functions available to the page buttons */
+Object.assign(window,{
  login,
  register,
  logout,
  tab,
+ goToActivation,
  sendPayment,
  submitWork,
  saveTask,
