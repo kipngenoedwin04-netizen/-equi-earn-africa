@@ -1,653 +1,289 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#071b17">
-<title>EQUI EARN-AFRICA | Work • Earn • Grow</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EQUI EARN AFRICA</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#071b17;color:#f5f7f5;font-family:Arial,sans-serif}
-header{padding:18px 6%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #244039}
-.brand{font-size:21px;font-weight:800;color:#35d39a}
-.brand span{color:white}
-button{border:0;border-radius:9px;padding:12px 18px;background:#35d39a;color:#06251b;font-weight:bold;cursor:pointer}
-button.secondary{background:#203d34;color:white}
-button.danger{background:#8b3030;color:white}
-button:disabled{opacity:.5;cursor:not-allowed}
-main{max-width:1050px;margin:auto;padding:25px 20px}
-.hero{padding:30px 10px;text-align:center}
-.hero h1{font-size:clamp(32px,7vw,55px);margin:10px 0}
-.hero h1 span{color:#35d39a}
-.muted{color:#a8bbb3;line-height:1.6}
-.panel{background:#102a23;border:1px solid #24483d;border-radius:15px;padding:22px;margin:18px 0}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
-input{width:100%;padding:14px;margin:8px 0 15px;background:#071b17;border:1px solid #36564b;border-radius:8px;color:white}
-label{font-size:14px;color:#c4d5cd}
-.hidden{display:none!important}
-.status{display:inline-block;background:#24483d;color:#75e8b9;padding:7px 12px;border-radius:20px;font-size:12px}
-.task,.payment-item{border:1px solid #36564b;padding:16px;border-radius:12px;margin:12px 0;overflow-wrap:anywhere}
-.task h3{margin-top:0}
-footer{text-align:center;padding:30px;color:#8ca49a;font-size:13px}
-#message{padding:12px;border-radius:8px;margin:12px 0;display:none}
-.error{background:#572b2b;color:#ffdada}
-.success{background:#174b38;color:#baffd9}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-.small{font-size:12px;color:#a8bbb3}
-.payment-box{background:#091e18;border:1px solid #b8860b;border-radius:13px;padding:20px;margin:18px 0}
-.payment-heading{color:#f5d76e;font-weight:900;letter-spacing:1px}
-.payment-value{color:#35d39a;font-weight:900}
-.payment-number{font-size:clamp(25px,6vw,36px);letter-spacing:1px}
-.pay-button{display:block;width:100%;max-width:400px;margin:22px auto;padding:18px 12px;text-align:center;background:linear-gradient(135deg,#f5d76e,#d4af37,#b8860b);color:#071b17;font-size:17px;font-weight:900;text-decoration:none;border-radius:12px;border:2px solid #ffe69a}
-.notice{padding:13px;border-radius:9px;background:#203d34;color:#f5d76e;margin:15px 0}
+*{box-sizing:border-box}body{margin:0;background:#07140e;color:#f4f4e9;font:15px Arial,sans-serif}
+header{padding:20px;background:#10271b;border-bottom:2px solid #d6ad32;display:flex;justify-content:space-between;align-items:center}
+.brand{color:#f3cb51;font-size:21px;font-weight:bold}
+main{max-width:1050px;margin:auto;padding:18px}
+.card{background:#12291d;border:1px solid #31543d;border-radius:13px;padding:18px;margin:14px 0}
+h1,h2,h3{color:#f3cb51}input,textarea,select{width:100%;padding:12px;margin:7px 0 13px;background:#071a10;color:white;border:1px solid #45634d;border-radius:8px}
+textarea{min-height:90px}button{background:#e5bd43;color:#172014;border:0;border-radius:8px;padding:11px 15px;font-weight:bold;margin:4px;cursor:pointer}
+button.alt{background:#31533e;color:white}button.red{background:#8c3030;color:white}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin:15px 0}
+nav button{background:#203d2b;color:white}nav button.active{background:#e5bd43;color:#172014}
+.hidden{display:none!important}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.stat{font-size:25px;color:#f3cb51;font-weight:bold}.muted{color:#b5c5b8;font-size:13px}
+.task{padding:15px;margin:12px 0;background:#091d12;border:1px solid #36563e;border-radius:10px}
+.pill{padding:5px 9px;border-radius:20px;background:#46533a;font-size:12px}
+.pending{background:#65521e}.approved{background:#155b36}.rejected{background:#702b2b}
+.msg{padding:10px;color:#f3cb51}.row{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
 </style>
 </head>
-
 <body>
 <header>
-  <div class="brand">EQUI_<span>EARN</span>-AFRICA</div>
-  <button class="secondary" id="logoutBtn" onclick="logout()" hidden>Log out</button>
+ <div class="brand">EQUI EARN AFRICA</div>
+ <button id="logoutBtn" class="hidden" onclick="logout()">Logout</button>
 </header>
-
 <main>
-<section class="hero">
-  <p class="status">WORK • EARN • GROW</p>
-  <h1>Build Skills. <span>Earn.</span> Grow.</h1>
-  <p class="muted">A platform connecting people to legitimate digital tasks and opportunities.</p>
+<section id="auth">
+ <div class="card">
+  <h1>Welcome to EQUI EARN AFRICA</h1>
+  <p class="muted">Register, activate your account, complete tasks and earn rewards after verification.</p>
+ </div>
+ <div class="grid">
+  <div class="card">
+   <h2>Login</h2>
+   <input id="loginEmail" type="email" placeholder="Email">
+   <input id="loginPassword" type="password" placeholder="Password">
+   <button onclick="login()">Login</button>
+  </div>
+  <div class="card">
+   <h2>Create account</h2>
+   <input id="regName" placeholder="Full name">
+   <input id="regEmail" type="email" placeholder="Email">
+   <input id="regPhone" placeholder="Phone number">
+   <input id="regPassword" type="password" placeholder="Password (minimum 6 characters)">
+   <button onclick="register()">Register</button>
+  </div>
+ </div>
+ <div id="authMsg" class="msg"></div>
 </section>
 
-<div id="message"></div>
+<section id="application" class="hidden">
+ <div class="card">
+  <div class="row"><h1 id="welcome">Dashboard</h1><span id="accountStatus" class="pill"></span></div>
+  <p class="muted">EQUI EARN AFRICA member area</p>
+ </div>
+ <nav id="memberNav">
+  <button onclick="tab('home')">Home</button>
+  <button onclick="tab('tasks')">Tasks</button>
+  <button onclick="tab('work')">My Work</button>
+  <button onclick="tab('wallet')">Wallet</button>
+  <button onclick="tab('profile')">Profile</button>
+ </nav>
+ <nav id="adminNav" class="hidden">
+  <button onclick="tab('overview')">Overview</button>
+  <button onclick="tab('manage')">Manage Tasks</button>
+  <button onclick="tab('review')">Review Work</button>
+  <button onclick="tab('payments')">Payments</button>
+ </nav>
 
-<!-- REGISTRATION AND LOGIN -->
-<section id="authSection" class="panel">
-  <h2 id="authTitle">Create your account</h2>
-  <p class="muted">Register for free to explore the platform.</p>
-
-  <div id="nameField">
-    <label>Full name</label>
-    <input id="fullName" type="text" autocomplete="name" placeholder="Enter your full name">
-
-    <label>Phone number (M-Pesa)</label>
-    <input id="phone" type="tel" autocomplete="tel" placeholder="07XXXXXXXX or 01XXXXXXXX">
-    <p class="small">Use a Kenyan mobile number registered with M-Pesa.</p>
-  </div>
-
-  <label>Email address</label>
-  <input id="email" type="email" autocomplete="email" placeholder="you@example.com">
-
-  <label>Password</label>
-  <input id="password" type="password" autocomplete="new-password" placeholder="At least 8 characters">
-
-  <button id="authBtn" onclick="authenticate()">Create account</button>
-
-  <p class="muted" id="switchText">
-    Already registered?
-    <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Log in</a>
-  </p>
-</section>
-
-<!-- MEMBER DASHBOARD -->
-<section id="dashboard" class="hidden">
-
-  <div class="panel">
-    <p class="muted">WELCOME</p>
-    <h2 id="memberName">Member</h2>
-    <p>Account status: <span class="status" id="accountStatus">registered</span></p>
-    <p class="muted">Your account dashboard.</p>
-  </div>
-
-  <!-- WALLETS -->
+ <section id="home" class="page">
   <div class="grid">
-    <div class="panel">
-      <h3>Task wallet</h3>
-      <h2 id="taskBalance">KSh 0.00</h2>
-      <p class="muted">Pending: <span id="taskPending">KSh 0.00</span></p>
-    </div>
-
-    <div class="panel">
-      <h3>Referral wallet</h3>
-      <h2 id="referralBalance">KSh 0.00</h2>
-      <p class="muted">Pending: <span id="referralPending">KSh 0.00</span></p>
-    </div>
+   <div class="card">Task wallet<div id="homeTask" class="stat">KSh 0</div></div>
+   <div class="card">Referral wallet<div id="homeRef" class="stat">KSh 0</div></div>
   </div>
+  <div id="activation" class="card">
+   <h2>Activate account</h2>
+   <p>Pay KSh 350 through M-Pesa:</p>
+   <p><b>PayBill:</b> 247247<br><b>Account:</b> 0230187637829<br><b>Amount:</b> KSh 350</p>
+   <p class="muted">After paying, submit your transaction code. Admin verifies manually.</p>
+   <input id="mpesaCode" placeholder="M-Pesa transaction code">
+   <button onclick="sendPayment()">Submit payment</button>
+   <div id="paymentMsg" class="msg"></div>
+  </div>
+  <div id="activeMessage" class="card hidden">Your account is active. You can now access available tasks.</div>
+ </section>
 
-  <!-- ACTIVATION PAYMENT DETAILS -->
-  <section id="activationPanel" class="panel hidden">
-    <h2>Account Activation</h2>
-    <p class="muted">Complete your one-time activation payment to unlock access to member opportunities.</p>
+ <section id="tasks" class="page hidden">
+  <div class="card"><h2>Available tasks</h2><div id="taskList">Loading...</div></div>
+ </section>
+ <section id="work" class="page hidden">
+  <div class="card"><h2>My Work Submissions</h2><div id="myWork">Loading...</div></div>
+ </section>
+ <section id="wallet" class="page hidden">
+  <div class="grid">
+   <div class="card">Task wallet<div id="taskWallet" class="stat">KSh 0</div></div>
+   <div class="card">Referral wallet<div id="refWallet" class="stat">KSh 0</div></div>
+  </div>
+  <div class="card"><p class="muted">Task rewards are credited after admin approval. Withdrawal functionality is not yet enabled.</p></div>
+ </section>
+ <section id="profile" class="page hidden"><div class="card"><h2>My Profile</h2><div id="profileInfo"></div></div></section>
 
-    <div id="paymentStatusNotice" class="notice hidden"></div>
+ <section id="overview" class="page hidden">
+  <div class="grid">
+   <div class="card">Total members<div id="memberCount" class="stat">0</div></div>
+   <div class="card">Pending submissions<div id="pendingCount" class="stat">0</div></div>
+   <div class="card">Pending payments<div id="paymentCount" class="stat">0</div></div>
+  </div>
+ </section>
 
-    <div class="payment-box">
-      <h3 class="payment-heading">M-PESA PAYMENT DETAILS</h3>
+ <section id="manage" class="page hidden">
+  <div class="card">
+   <h2 id="formHeading">Publish a task</h2>
+   <input id="editId" type="hidden">
+   <label>Task title</label><input id="taskTitle" placeholder="Task title">
+   <label>Description / instructions</label><textarea id="taskDescription" placeholder="Explain what members must do"></textarea>
+   <div class="grid">
+    <div><label>Reward in KSh</label><input id="taskReward" type="number" min="0" placeholder="50"></div>
+    <div><label>Deadline</label><input id="taskDeadline" type="date"></div>
+   </div>
+   <label>Status</label><select id="taskStatus"><option value="draft">Draft</option><option value="published">Published</option><option value="paused">Paused</option></select>
+   <button onclick="saveTask()">Save task</button><button class="alt" onclick="clearForm()">Clear</button>
+   <div id="taskMsg" class="msg"></div>
+  </div>
+  <div class="card"><h2>All tasks</h2><div id="adminTasks">Loading...</div></div>
+ </section>
 
-      <p>Payment method: <strong class="payment-value">M-PESA PAYBILL</strong></p>
-
-      <p>PayBill Number:</p>
-      <div class="payment-value payment-number">247247</div>
-
-      <p>Account Number:</p>
-      <div class="payment-value payment-number">0230187637829</div>
-
-      <p>Activation Fee:</p>
-      <div class="payment-value payment-number">KSh 350</div>
-    </div>
-
-    <h3>PAYMENT INSTRUCTIONS</h3>
-    <ol class="muted" style="line-height:2">
-      <li>Open M-PESA on your phone.</li>
-      <li>Select Lipa na M-PESA.</li>
-      <li>Select Pay Bill.</li>
-      <li>Enter PayBill number <strong>247247</strong>.</li>
-      <li>Enter account number <strong>0230187637829</strong>.</li>
-      <li>Enter amount <strong>KSh 350</strong>.</li>
-      <li>Confirm and complete payment.</li>
-      <li>Keep your M-PESA confirmation message.</li>
-    </ol>
-
-    <a href="payment.html" class="pay-button">SUBMIT M-PESA PAYMENT CODE</a>
-
-    <p class="small" style="text-align:center">
-      Your account will be activated only after administrator verification.
-    </p>
-  </section>
-
-  <!-- ACTIVATED ACCOUNT MESSAGE -->
-  <section id="activePanel" class="panel hidden">
-    <h2 style="color:#35d39a">Account Activated</h2>
-    <p>Your account is active. You can now access published opportunities.</p>
-  </section>
-
-  <!-- ADMIN PAYMENT MANAGEMENT -->
-  <section id="adminPanel" class="panel hidden">
-    <h2>Admin payment management</h2>
-    <p class="muted">Verify each transaction in your M-PESA records before approving or rejecting it.</p>
-    <button class="secondary" onclick="loadAdminPayments()">Refresh payments</button>
-    <div id="adminPaymentList">Loading payment requests...</div>
-  </section>
-
-  <!-- TASKS -->
-  <section class="panel">
-    <h2>Available tasks</h2>
-    <p class="muted">Browse published opportunities below.</p>
-    <div id="taskList">Loading tasks...</div>
-  </section>
-
-  <!-- REFERRALS -->
-  <section class="panel">
-    <h2>Referral programme</h2>
-    <p class="muted" id="referralInfo">Referral access is reserved for activated members.</p>
-  </section>
-
+ <section id="review" class="page hidden">
+  <div class="card"><h2>Review member work</h2><div id="submissions">Loading...</div></div>
+ </section>
+ <section id="payments" class="page hidden">
+  <div class="card"><h2>Activation payment requests</h2><div id="paymentsList">Loading...</div></div>
+ </section>
 </section>
 </main>
 
-<footer>
-  EQUI_EARN-AFRICA © 2026 · WORK • EARN • GROW
-  <p>Opportunities are subject to task requirements and review.</p>
-</footer>
-
 <script>
-// SUPABASE CONFIGURATION
-const SUPABASE_URL = "https://bzmkvybtvajwcixsvkja.supabase.co";
-const SUPABASE_KEY = "sb_publishable_TMstsd1FC45CiyD7zRq7pQ_yH5GpbNV";
+const URL="https://bzmkvybtvajwcixsvkja.supabase.co";
+const KEY="sb_publishable_TMstsd1FC45CiyD7zRq7pQ_yH5GpbNV";
+const db=window.supabase.createClient(URL,KEY);
+let user=null,profile=null,admin=false;
+const $=id=>document.getElementById(id);
+const money=n=>"KSh "+Number(n||0).toLocaleString("en-KE",{minimumFractionDigits:2});
+const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pill=s=>`<span class="pill ${safe(s)}">${safe(s||"pending")}</span>`;
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-let isLogin = false;
-let currentUser = null;
-let currentProfile = null;
-let loadingDashboard = false;
-
-// MESSAGE DISPLAY
-function showMessage(message, type = "success") {
-  const box = document.getElementById("message");
-  box.textContent = message;
-  box.className = type;
-  box.style.display = "block";
+async function register(){
+ const name=$("regName").value.trim(),email=$("regEmail").value.trim(),password=$("regPassword").value;
+ if(!name||!email||password.length<6){$("authMsg").textContent="Enter your name, email and a password of at least 6 characters.";return;}
+ const {data,error}=await db.auth.signUp({email,password,options:{data:{full_name:name}}});
+ if(error){$("authMsg").textContent=error.message;return;}
+ if(data.user){
+  const {error:e}=await db.from("profiles").upsert({id:data.user.id,full_name:name,email,phone:$("regPhone").value.trim()},{onConflict:"id"});
+  if(e)console.error(e);
+ }
+ $("authMsg").textContent=data.session?"Registration successful.":"Registration successful. Check your email for confirmation, then log in.";
 }
-
-// CURRENCY FORMAT
-function money(amount) {
-  return "KSh " + Number(amount || 0).toFixed(2);
+async function login(){
+ const {data,error}=await db.auth.signInWithPassword({email:$("loginEmail").value.trim(),password:$("loginPassword").value});
+ if(error){$("authMsg").textContent=error.message;return;}
+ await start(data.user);
 }
-
-// PHONE VALIDATION
-function normalizeKenyanPhone(value) {
-  let phone = value.replace(/[\s()+-]/g, "");
-
-  if (phone.startsWith("0") && phone.length === 10) {
-    phone = "254" + phone.substring(1);
-  } else if (
-    (phone.startsWith("7") || phone.startsWith("1")) &&
-    phone.length === 9
-  ) {
-    phone = "254" + phone;
-  }
-
-  if (!/^254[17]\d{8}$/.test(phone)) return null;
-  return phone;
+async function start(u){
+ user=u;
+ let {data:p,error}=await db.from("profiles").select("*").eq("id",u.id).maybeSingle();
+ if(!p){$("authMsg").textContent="Profile not found. Check your profiles table and registration policy.";return;}
+ profile=p;admin=p.role==="admin";
+ $("auth").classList.add("hidden");$("application").classList.remove("hidden");$("logoutBtn").classList.remove("hidden");
+ $("welcome").textContent="Welcome, "+(p.full_name||u.email);
+ $("accountStatus").textContent=(p.account_status||"registered").toUpperCase();
+ $("memberNav").classList.toggle("hidden",admin);$("adminNav").classList.toggle("hidden",!admin);
+ $("activation").classList.toggle("hidden",p.account_status==="active"||admin);
+ $("activeMessage").classList.toggle("hidden",p.account_status!=="active"||admin);
+ tab(admin?"overview":"home");await wallets();
 }
-
-// SWITCH LOGIN / REGISTRATION
-function toggleAuth() {
-  isLogin = !isLogin;
-
-  document.getElementById("authTitle").textContent =
-    isLogin ? "Welcome back" : "Create your account";
-
-  document.getElementById("authBtn").textContent =
-    isLogin ? "Log in" : "Create account";
-
-  document.getElementById("nameField").classList.toggle("hidden", isLogin);
-
-  document.getElementById("switchText").innerHTML = isLogin
-    ? 'New here? <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Create account</a>'
-    : 'Already registered? <a href="#" onclick="toggleAuth();return false" style="color:#35d39a">Log in</a>';
-
-  document.getElementById("password").autocomplete =
-    isLogin ? "current-password" : "new-password";
+async function logout(){await db.auth.signOut();location.reload();}
+function tab(name){
+ document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));
+ $(name).classList.remove("hidden");
+ if(name==="tasks")loadTasks();
+ if(name==="work")loadMyWork();
+ if(name==="wallet")wallets();
+ if(name==="profile")loadProfile();
+ if(name==="manage")loadAdminTasks();
+ if(name==="review")loadSubmissions();
+ if(name==="payments")loadPayments();
+ if(name==="overview")loadOverview();
 }
-
-// REGISTER / LOGIN
-async function authenticate() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  const fullName = document.getElementById("fullName").value.trim();
-  const rawPhone = document.getElementById("phone").value.trim();
-  const btn = document.getElementById("authBtn");
-
-  if (!email || !password || (!isLogin && (!fullName || !rawPhone))) {
-    return showMessage("Please complete all required fields.", "error");
-  }
-
-  if (password.length < 8) {
-    return showMessage("Password must have at least 8 characters.", "error");
-  }
-
-  let normalizedPhone = null;
-
-  if (!isLogin) {
-    normalizedPhone = normalizeKenyanPhone(rawPhone);
-    if (!normalizedPhone) {
-      return showMessage("Enter a valid Kenyan mobile number, for example 0712345678.", "error");
-    }
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Please wait...";
-
-  try {
-    let result;
-
-    if (isLogin) {
-      result = await db.auth.signInWithPassword({ email, password });
-    } else {
-      result = await db.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            phone: normalizedPhone
-          }
-        }
-      });
-    }
-
-    if (result.error) throw result.error;
-
-    if (!isLogin && !result.data.session) {
-      showMessage("Registration received! Check your email to confirm your account before logging in.");
-      toggleAuth();
-    } else {
-      showMessage(isLogin ? "Login successful!" : "Account created!");
-      await loadDashboard();
-    }
-  } catch (error) {
-    showMessage(error.message || "Something went wrong.", "error");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = isLogin ? "Log in" : "Create account";
-  }
+async function wallets(){
+ const {data,error}=await db.from("wallets").select("wallet_type,available_balance").eq("user_id",user.id);
+ if(error){console.error(error);return;}
+ let t=0,r=0;(data||[]).forEach(w=>{if(w.wallet_type==="tasks")t=+w.available_balance;if(w.wallet_type==="referrals")r=+w.available_balance;});
+ ["homeTask","taskWallet"].forEach(id=>$(id).textContent=money(t));
+ ["homeRef","refWallet"].forEach(id=>$(id).textContent=money(r));
 }
-
-// LOAD DASHBOARD
-async function loadDashboard() {
-  if (loadingDashboard) return;
-  loadingDashboard = true;
-
-  try {
-    const { data: { user }, error: userError } = await db.auth.getUser();
-
-    if (userError || !user) {
-      document.getElementById("dashboard").classList.add("hidden");
-      document.getElementById("authSection").classList.remove("hidden");
-      document.getElementById("logoutBtn").hidden = true;
-      return;
-    }
-
-    currentUser = user;
-
-    const { data: profile, error: profileError } = await db
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-
-    if (profileError) {
-      showMessage("Could not load your profile: " + profileError.message, "error");
-      return;
-    }
-
-    currentProfile = profile;
-
-    // Keep the saved registration phone number in the profile.
-    const savedPhone = user.user_metadata?.phone;
-
-    if (!profile.phone && savedPhone) {
-      const { error: phoneError } = await db
-        .from("profiles")
-        .update({ phone: savedPhone })
-        .eq("id", user.id);
-
-      if (!phoneError) profile.phone = savedPhone;
-    }
-
-    document.getElementById("authSection").classList.add("hidden");
-    document.getElementById("dashboard").classList.remove("hidden");
-    document.getElementById("logoutBtn").hidden = false;
-
-    document.getElementById("memberName").textContent =
-      profile.full_name || user.user_metadata?.full_name || "Member";
-
-    const accountStatus = String(profile.account_status || "registered").toLowerCase();
-
-    document.getElementById("accountStatus").textContent = accountStatus;
-
-    const isAdmin = profile.role === "admin";
-    const isActive = accountStatus === "active";
-
-    // IMPORTANT:
-    // Every non-admin member sees payment details until account activation.
-    // Pending payment does not hide the payment details.
-    document.getElementById("activationPanel")
-      .classList.toggle("hidden", isAdmin || isActive);
-
-    document.getElementById("activePanel")
-      .classList.toggle("hidden", !isActive);
-
-    document.getElementById("adminPanel")
-      .classList.toggle("hidden", !isAdmin);
-
-    // Check whether this member has already submitted a payment.
-    await loadMyPaymentStatus();
-
-    // LOAD WALLETS
-    const { data: wallets, error: walletError } = await db
-      .from("wallets")
-      .select("*")
-      .eq("user_id", user.id);
-
-    if (walletError) {
-      console.error("Wallet loading error:", walletError.message);
-    } else {
-      const task = (wallets || []).find(w => w.wallet_type === "tasks");
-      const referral = (wallets || []).find(w => w.wallet_type === "referrals");
-
-      document.getElementById("taskBalance").textContent =
-        money(task?.available_balance);
-
-      document.getElementById("taskPending").textContent =
-        money(task?.pending_balance);
-
-      document.getElementById("referralBalance").textContent =
-        money(referral?.available_balance);
-
-      document.getElementById("referralPending").textContent =
-        money(referral?.pending_balance);
-    }
-
-    // REFERRAL INFORMATION
-    document.getElementById("referralInfo").textContent = isActive
-      ? "Your referral code: " + (profile.referral_code || "Not assigned") +
-        ". Referral rewards and withdrawals are subject to platform rules."
-      : "Referral access is reserved for activated members.";
-
-    // ADMIN PAYMENTS
-    if (isAdmin) await loadAdminPayments();
-
-    // TASKS
-    await loadTasks();
-
-  } catch (error) {
-    showMessage("Dashboard error: " + error.message, "error");
-  } finally {
-    loadingDashboard = false;
-  }
+async function sendPayment(){
+ const code=$("mpesaCode").value.trim().toUpperCase();if(!code){$("paymentMsg").textContent="Enter your M-Pesa code.";return;}
+ const {error}=await db.from("activation_payments").insert({user_id:user.id,mpesa_code:code,amount:350,status:"pending"});
+ $("paymentMsg").textContent=error?error.message:"Payment code submitted. Await admin verification.";
+ if(!error)$("mpesaCode").value="";
 }
-
-// MEMBER PAYMENT STATUS
-async function loadMyPaymentStatus() {
-  const notice = document.getElementById("paymentStatusNotice");
-  notice.classList.add("hidden");
-  notice.textContent = "";
-
-  if (!currentUser) return;
-
-  const { data, error } = await db
-    .from("activation_payments")
-    .select("status,created_at")
-    .eq("user_id", currentUser.id)
-    .order("created_at", { ascending: false })
-    .limit(1);
-
-  if (error) {
-    console.error("Payment status check:", error.message);
-    return;
-  }
-
-  if (data && data.length > 0) {
-    const status = String(data[0].status || "").toLowerCase();
-
-    if (status === "pending") {
-      notice.textContent =
-        "Your payment code has been submitted and is waiting for administrator verification. Keep your M-PESA confirmation message.";
-      notice.classList.remove("hidden");
-    } else if (status === "rejected") {
-      notice.textContent =
-        "Your previous payment submission was rejected. Please contact the administrator before submitting another payment.";
-      notice.classList.remove("hidden");
-    }
-  }
+async function loadTasks(){
+ const root=$("taskList");
+ if(profile.account_status!=="active"&&!admin){root.textContent="Activate your account to access tasks.";return;}
+ const {data,error}=await db.from("tasks").select("*").eq("status","published").order("created_at",{ascending:false});
+ if(error){root.textContent=error.message;return;}
+ if(!data?.length){root.textContent="No published tasks yet.";return;}
+ const {data:mine}=await db.from("task_submissions").select("task_id,status").eq("user_id",user.id);
+ const done=new Map((mine||[]).map(x=>[x.task_id,x.status]));
+ root.innerHTML=data.map(t=>`<article class="task"><div class="row"><h3>${safe(t.title)}</h3><b>${money(t.payout)}</b></div><p>${safe(t.description)}</p><p class="muted">Deadline: ${safe(t.deadline||"Not specified")}</p>${done.has(t.id)?`Already submitted: ${pill(done.get(t.id))}`:`<textarea id="proof${t.id}" placeholder="Paste proof link or describe your completed work"></textarea><button onclick="submitWork('${t.id}')">Submit proof</button>`}</article>`).join("");
 }
-
-// ADMIN: LOAD PAYMENT REQUESTS
-async function loadAdminPayments() {
-  const list = document.getElementById("adminPaymentList");
-  list.textContent = "Loading payment requests...";
-
-  const { data: payments, error } = await db
-    .from("activation_payments")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    list.textContent = "Could not load payments: " + error.message;
-    return;
-  }
-
-  if (!payments || payments.length === 0) {
-    list.textContent = "No payment requests submitted yet.";
-    return;
-  }
-
-  const userIds = [...new Set(payments.map(p => p.user_id))];
-
-  const { data: profiles, error: profileError } = await db
-    .from("profiles")
-    .select("id,full_name,phone")
-    .in("id", userIds);
-
-  if (profileError) {
-    list.textContent = "Could not load member details: " + profileError.message;
-    return;
-  }
-
-  const profileMap = new Map((profiles || []).map(p => [p.id, p]));
-  list.innerHTML = "";
-
-  payments.forEach(payment => {
-    const member = profileMap.get(payment.user_id);
-    const item = document.createElement("div");
-    item.className = "payment-item";
-
-    const heading = document.createElement("h3");
-    heading.textContent = member?.full_name || "Member";
-
-    const phone = document.createElement("p");
-    phone.textContent = "M-Pesa phone: " + (member?.phone || "Not provided");
-
-    const code = document.createElement("p");
-    code.textContent = "M-Pesa code: " + payment.mpesa_code;
-
-    const amount = document.createElement("p");
-    amount.textContent = "Amount: " + money(payment.amount);
-
-    const status = document.createElement("p");
-    status.textContent = "Status: " + String(payment.status).toUpperCase();
-
-    const date = document.createElement("p");
-    date.textContent = "Submitted: " + new Date(payment.created_at).toLocaleString();
-
-    item.append(heading, phone, code, amount, status, date);
-
-    if (payment.status === "pending") {
-      const actions = document.createElement("div");
-      actions.className = "actions";
-
-      const approve = document.createElement("button");
-      approve.textContent = "Approve payment";
-      approve.onclick = () => reviewPayment(payment.id, "approved");
-
-      const reject = document.createElement("button");
-      reject.textContent = "Reject payment";
-      reject.className = "danger";
-      reject.onclick = () => reviewPayment(payment.id, "rejected");
-
-      actions.append(approve, reject);
-      item.appendChild(actions);
-    }
-
-    list.appendChild(item);
-  });
+async function submitWork(id){
+ if(profile.account_status!=="active"){alert("Activate your account first.");return;}
+ const proof=$("proof"+id).value.trim();if(!proof){alert("Enter proof first.");return;}
+ const {error}=await db.from("task_submissions").insert({task_id:id,user_id:user.id,proof,status:"pending"});
+ if(error){alert(error.message);return;}alert("Work submitted for admin review.");loadTasks();
 }
-
-// ADMIN: APPROVE OR REJECT PAYMENT
-async function reviewPayment(paymentId, decision) {
-  const confirmed = confirm(
-    "Have you verified this payment in your M-PESA records? Proceed to " +
-    decision + " it?"
-  );
-
-  if (!confirmed) return;
-
-  try {
-    const { error } = await db.rpc("review_activation_payment", {
-      p_payment_id: paymentId,
-      p_decision: decision
-    });
-
-    if (error) throw error;
-
-    showMessage("Payment successfully " + decision + ".");
-    await loadAdminPayments();
-  } catch (error) {
-    showMessage("Review failed: " + error.message, "error");
-  }
+async function loadMyWork(){
+ const root=$("myWork");const {data,error}=await db.from("task_submissions").select("*").eq("user_id",user.id).order("created_at",{ascending:false});
+ if(error){root.textContent=error.message;return;}if(!data?.length){root.textContent="No submissions yet.";return;}
+ const ids=[...new Set(data.map(x=>x.task_id))];const {data:tasks}=await db.from("tasks").select("id,title,payout").in("id",ids);
+ const map={};(tasks||[]).forEach(t=>map[t.id]=t);
+ root.innerHTML=data.map(s=>`<article class="task"><div class="row"><h3>${safe(map[s.task_id]?.title||"Task")}</h3>${pill(s.status)}</div><p>${safe(s.proof)}</p><p class="muted">Reward: ${money(map[s.task_id]?.payout)}<br>Admin feedback: ${safe(s.admin_note||"No feedback yet")}</p></article>`).join("");
 }
-
-// LOAD PUBLISHED TASKS
-async function loadTasks() {
-  const list = document.getElementById("taskList");
-  list.textContent = "Loading tasks...";
-
-  const { data, error } = await db
-    .from("tasks")
-    .select("id,title,description,payout,deadline")
-    .eq("status", "published")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    list.textContent = "Unable to load tasks: " + error.message;
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    list.textContent = "No published tasks yet. Please check again later.";
-    return;
-  }
-
-  list.innerHTML = "";
-
-  data.forEach(task => {
-    const item = document.createElement("div");
-    item.className = "task";
-
-    const title = document.createElement("h3");
-    title.textContent = task.title;
-
-    const description = document.createElement("p");
-    description.textContent = task.description || "";
-
-    const payout = document.createElement("strong");
-    payout.textContent = "Payout: " + money(task.payout);
-
-    const deadline = document.createElement("p");
-     deadline.className = "small";
-    deadline.textContent = "Deadline: " + (task.deadline || "Not specified");
-
-    item.append(title, description, payout, deadline);
-    list.appendChild(item);
-  });
+async function saveTask(){
+ const id=$("editId").value,title=$("taskTitle").value.trim(),description=$("taskDescription").value.trim(),payout=Number($("taskReward").value),deadline=$("taskDeadline").value||null,status=$("taskStatus").value;
+ if(!title||!description||!Number.isFinite(payout)||payout<0){$("taskMsg").textContent="Enter title, description and a valid reward.";return;}
+ const payload={title,description,payout,deadline,status};
+ const result=id?await db.from("tasks").update(payload).eq("id",id):await db.from("tasks").insert(payload);
+ if(result.error){$("taskMsg").textContent=result.error.message;return;}
+ $("taskMsg").textContent="Task saved successfully.";clearForm();loadAdminTasks();
 }
-
-// LOGOUT
-async function logout() {
-  await db.auth.signOut();
-  currentUser = null;
-  currentProfile = null;
-  location.reload();
+function clearForm(){["editId","taskTitle","taskDescription","taskReward","taskDeadline"].forEach(id=>$(id).value="");$("taskStatus").value="draft";$("formHeading").textContent="Publish a task";}
+async function loadAdminTasks(){
+ const root=$("adminTasks");const {data,error}=await db.from("tasks").select("*").order("created_at",{ascending:false});
+ if(error){root.textContent=error.message;return;}if(!data?.length){root.textContent="No tasks created yet.";return;}
+ root.innerHTML=data.map(t=>`<article class="task"><div class="row"><h3>${safe(t.title)}</h3>${pill(t.status)}</div><p>${safe(t.description)}</p><b>${money(t.payout)}</b><div><button class="alt" onclick="editTask('${t.id}')">Edit</button><button onclick="changeStatus('${t.id}','published')">Publish</button><button class="alt" onclick="changeStatus('${t.id}','paused')">Pause</button><button class="red" onclick="deleteTask('${t.id}')">Delete</button></div></article>`).join("");
 }
-
-// SESSION LISTENER
-db.auth.onAuthStateChange((event, session) => {
-  if (session && event === "SIGNED_IN") {
-    setTimeout(() => loadDashboard(), 0);
-  }
-
-  if (event === "SIGNED_OUT") {
-    document.getElementById("dashboard").classList.add("hidden");
-    document.getElementById("authSection").classList.remove("hidden");
-    document.getElementById("logoutBtn").hidden = true;
-  }
-});
-
-// CHECK EXISTING SESSION
-(async function start() {
-  const { data: { session }, error } = await db.auth.getSession();
-
-  if (error) {
-    showMessage("Could not check login session: " + error.message, "error");
-    return;
-  }
-
-  if (session) {
-    await loadDashboard();
-  }
-})();
+async function editTask(id){
+ const {data,error}=await db.from("tasks").select("*").eq("id",id).single();if(error){alert(error.message);return;}
+ $("editId").value=data.id;$("taskTitle").value=data.title;$("taskDescription").value=data.description;$("taskReward").value=data.payout;$("taskDeadline").value=data.deadline||"";$("taskStatus").value=data.status;$("formHeading").textContent="Edit task";window.scrollTo(0,0);
+}
+async function changeStatus(id,status){const {error}=await db.from("tasks").update({status}).eq("id",id);if(error)alert(error.message);else loadAdminTasks();}
+async function deleteTask(id){if(!confirm("Delete this task?"))return;const {error}=await db.from("tasks").delete().eq("id",id);if(error)alert(error.message);else loadAdminTasks();}
+async function loadSubmissions(){
+ const root=$("submissions");const {data,error}=await db.from("task_submissions").select("*").order("created_at",{ascending:false});
+ if(error){root.textContent=error.message;return;}if(!data?.length){root.textContent="No submissions yet.";return;}
+ const ids=[...new Set(data.map(s=>s.task_id))],users=[...new Set(data.map(s=>s.user_id))];
+ const tr=await db.from("tasks").select("id,title,payout").in("id",ids);
+ const pr=await db.from("profiles").select("id,full_name,email").in("id",users);
+ const tm={},pm={};(tr.data||[]).forEach(x=>tm[x.id]=x);(pr.data||[]).forEach(x=>pm[x.id]=x);
+ root.innerHTML=data.map(s=>`<article class="task"><div class="row"><h3>${safe(tm[s.task_id]?.title||"Task")}</h3>${pill(s.status)}</div><p class="muted">Member: ${safe(pm[s.user_id]?.full_name||pm[s.user_id]?.email||s.user_id)}</p><p>${safe(s.proof)}</p><b>${money(tm[s.task_id]?.payout)}</b>${s.status==="pending"?`<textarea id="note${s.id}" placeholder="Optional admin feedback"></textarea><button onclick="review('${s.id}','approved')">Approve & credit reward</button><button class="red" onclick="review('${s.id}','rejected')">Reject</button>`:`<p class="muted">Feedback: ${safe(s.admin_note||"None")}</p>`}</article>`).join("");
+}
+async function review(id,decision){
+ if(!confirm(decision==="approved"?"Approve and credit reward?":"Reject this work?"))return;
+ const {error}=await db.rpc("review_task_submission",{p_submission_id:id,p_decision:decision,p_admin_note:$("note"+id)?.value.trim()||null});
+ if(error){alert(error.message);return;}alert("Submission "+decision+".");loadSubmissions();loadOverview();
+}
+async function loadPayments(){
+ const root=$("paymentsList");const {data,error}=await db.from("activation_payments").select("*").order("created_at",{ascending:false});
+ if(error){root.textContent=error.message;return;}if(!data?.length){root.textContent="No payment requests.";return;}
+ root.innerHTML=data.map(p=>`<article class="task"><h3>${safe(p.mpesa_code)}</h3><p>${money(p.amount)} • ${safe(p.user_id)}</p>${pill(p.status)}${p.status==="pending"?`<div><button onclick="reviewPayment('${p.id}','approved')">Approve & activate</button><button class="red" onclick="reviewPayment('${p.id}','rejected')">Reject</button></div>`:""}</article>`).join("");
+}
+async function reviewPayment(id,decision){
+ if(!confirm("Confirm "+decision+" payment?"))return;
+ const {error}=await db.rpc("review_activation_payment",{p_payment_id:id,p_decision:decision});
+ if(error){alert(error.message);return;}alert("Payment "+decision+".");loadPayments();loadOverview();
+}
+async function loadOverview(){
+ const a=await db.from("profiles").select("id",{count:"exact",head:true});
+ const b=await db.from("task_submissions").select("id",{count:"exact",head:true}).eq("status","pending");
+ const c=await db.from("activation_payments").select("id",{count:"exact",head:true}).eq("status","pending");
+ $("memberCount").textContent=a.count??0;$("pendingCount").textContent=b.count??0;$("paymentCount").textContent=c.count??0;
+}
+async function loadProfile(){
+ const p=profile;$("profileInfo").innerHTML=`Name: ${safe(p.full_name||"—")}<br>Email: ${safe(p.email||user.email)}<br>Phone: ${safe(p.phone||"—")}<br>Account: ${safe(p.account_status||"registered")}`;
+}
+db.auth.getSession().then(({data})=>{if(data.session)start(data.session.user);});
+db.auth.onAuthStateChange((event,session)=>{if(event==="SIGNED_OUT")location.reload();});
 </script>
 </body>
-</html>
+  </html>
+  
