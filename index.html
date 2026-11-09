@@ -93,6 +93,7 @@ nav button.active{background:#e5bd43;color:#172014}
   <button onclick="tab('work')">My Work</button>
   <button onclick="tab('wallet')">Wallet</button>
   <button onclick="tab('withdraw')">Withdraw</button>
+  <button onclick="tab('referral')">Referrals</button>
   <button onclick="tab('profile')">Profile</button>
  </nav>
 
@@ -175,6 +176,32 @@ nav button.active{background:#e5bd43;color:#172014}
    <div id="withdrawMsg" class="msg" role="status"></div>
   </div>
   <div class="card"><h2>My withdrawal history</h2><div id="myWithdrawals">Loading...</div></div>
+ </section>
+
+ <section id="referral" class="page hidden">
+  <div class="card">
+   <h2>My Referral Link</h2>
+   <p class="muted">Share your unique link. Your friend must register, pay the KSh 350 activation fee, and be activated by admin before you earn.</p>
+   <label>Your referral code</label><input id="myReferralCode" readonly>
+   <label>Your referral link</label><input id="myReferralLink" readonly>
+   <button onclick="copyReferralLink()">Copy referral link</button>
+   <button onclick="shareReferralWhatsApp()">Share on WhatsApp</button>
+   <div id="referralMsg" class="msg"></div>
+  </div>
+  <div class="grid">
+   <div class="card">People invited<div id="refInvited" class="stat">0</div></div>
+   <div class="card">Successful referrals<div id="refSuccessful" class="stat">0 / 5</div></div>
+   <div class="card">Referral wallet<div id="referralWalletAmount" class="stat">KSh 0.00</div></div>
+  </div>
+  <div class="card">
+   <h2>How referral rewards work</h2>
+   <p>1. Share your referral link.</p><p>2. Your friend registers using your link.</p>
+   <p>3. Your friend pays the KSh 350 activation fee.</p>
+   <p>4. Admin verifies the payment and activates the account.</p>
+   <p>5. KSh 105 is credited to your referral wallet.</p>
+   <p class="muted">You need at least 5 successful activated referrals before withdrawing referral rewards. Five successful referrals earn KSh 525. Task-wallet withdrawals are not affected.</p>
+   <div id="referralProgress" class="msg">Loading referral progress...</div>
+  </div>
  </section>
 
  <section id="profile" class="page hidden">
@@ -261,6 +288,10 @@ let db = null;
 let user = null;
 let profile = null;
 let admin = false;
+
+// Preserve a referral code from a shared ?ref= link until the new member logs in.
+const referralFromUrl = new URLSearchParams(location.search).get("ref");
+if (referralFromUrl) localStorage.setItem("equi_referral_code", referralFromUrl.trim().toUpperCase());
 
 const money = n => "KSh " + Number(n || 0).toLocaleString("en-KE", {
  minimumFractionDigits:2
@@ -439,6 +470,7 @@ async function start(u) {
 
   profile = p;
   admin = p.role === "admin";
+  await applyPendingReferral();
 
   $("auth").classList.add("hidden");
   $("application").classList.remove("hidden");
@@ -486,6 +518,7 @@ function tab(name) {
  if (name === "work") loadMyWork();
  if (name === "wallet") wallets();
  if (name === "withdraw") loadWithdrawalData();
+ if (name === "referral") loadReferrals();
  if (name === "withdrawals" && admin) loadAdminWithdrawals();
  if (name === "profile") loadProfile();
  if (name === "manage") loadAdminTasks();
@@ -498,6 +531,54 @@ function goToActivation() {
  tab("home");
  const activation = $("activation");
  if (activation) activation.scrollIntoView({ behavior:"smooth", block:"center" });
+}
+
+async function applyPendingReferral() {
+ if (!user || !profile || profile.referred_by) {
+  if (profile?.referred_by) localStorage.removeItem("equi_referral_code");
+  return;
+ }
+ const code = localStorage.getItem("equi_referral_code");
+ if (!code) return;
+ const { error } = await db.rpc("apply_referral_code", { p_code: code });
+ if (!error) {
+  localStorage.removeItem("equi_referral_code");
+  const { data } = await db.from("profiles").select("referred_by").eq("id", user.id).maybeSingle();
+  if (data) profile.referred_by = data.referred_by;
+ } else console.warn("Referral code was not applied:", error.message);
+}
+
+async function loadReferrals() {
+ if (!user || admin) return;
+ const code = profile?.referral_code || "";
+ const link = code ? location.origin + location.pathname + "?ref=" + encodeURIComponent(code) : "";
+ $("myReferralCode").value = code;
+ $("myReferralLink").value = link;
+ const { data, error } = await db.from("referrals").select("id,status,reward_amount,created_at").eq("referrer_id", user.id);
+ if (error) { $("referralProgress").textContent = "Could not load referrals: " + error.message; return; }
+ const invited = data?.length || 0;
+ const successful = (data || []).filter(x => x.status === "activated").length;
+ $("refInvited").textContent = invited;
+ $("refSuccessful").textContent = successful + " / 5";
+ $("referralProgress").textContent = successful >= 5
+  ? "You have reached the 5-successful-referral requirement for referral-wallet withdrawals."
+  : "You need " + (5 - successful) + " more successful activated referral(s) before withdrawing referral rewards.";
+ const { data: wallet, error: walletError } = await db.from("wallets").select("available_balance").eq("user_id", user.id).eq("wallet_type", "referrals").maybeSingle();
+ if (!walletError) $("referralWalletAmount").textContent = money(wallet?.available_balance || 0);
+}
+
+async function copyReferralLink() {
+ const link = $("myReferralLink").value;
+ if (!link) { $("referralMsg").textContent = "Your referral link is not ready yet."; return; }
+ try { await navigator.clipboard.writeText(link); $("referralMsg").textContent = "Referral link copied. Share it with your friends."; }
+ catch (error) { $("myReferralLink").focus(); $("myReferralLink").select(); $("referralMsg").textContent = "Select and copy the link above."; }
+}
+
+function shareReferralWhatsApp() {
+ const link = $("myReferralLink").value;
+ if (!link) { $("referralMsg").textContent = "Your referral link is not ready yet."; return; }
+ const message = "Join EQUI EARN AFRICA using my referral link: " + link + ". Register, activate your account, and get started!";
+ window.open("https://wa.me/?text=" + encodeURIComponent(message), "_blank");
 }
 
 async function wallets() {
@@ -523,6 +604,7 @@ async function wallets() {
  ["homeTask", "taskWallet", "withdrawTaskBalance"].forEach(id => $(id).textContent = money(t));
  ["homeRef", "refWallet", "withdrawReferralBalance"].forEach(id => $(id).textContent = money(r));
  ["combinedWallet", "withdrawAvailable"].forEach(id => $(id).textContent = money(t + r));
+ if ($("referralWalletAmount")) $("referralWalletAmount").textContent = money(r);
 }
 
 async function loadWithdrawalData() {
@@ -1164,7 +1246,11 @@ Object.assign(window,{
  reviewPayment,
  updateProfile,
  changePassword,
- sendPasswordReset
+ sendPasswordReset,
+ requestWithdrawal,
+ manageWithdrawal,
+ copyReferralLink,
+ shareReferralWhatsApp
 });
 
 loadSupabase();
